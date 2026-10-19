@@ -1,19 +1,18 @@
-import { Image } from 'expo-image';
 import { router, useNavigation } from 'expo-router';
 import type { BottomTabNavigationProp } from 'expo-router/tabs';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, View } from 'react-native';
+import { FlatList, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { BarreOutils } from '@/components/BarreOutils';
 import { CarteLeaflet } from '@/components/carte/CarteLeaflet';
 import type { DonneesCarte, MessageCarte } from '@/components/carte/carteHtml';
 import { Degrade } from '@/components/Degrade';
 import { NAV_HEIGHT } from '@/components/NavigationMenu';
 import { ProgressionRow } from '@/components/ProgressionRow';
-import { SegmentedControl } from '@/components/SegmentedControl';
 import { estLocalisee } from '@/data';
 import { useCarnet, useProuesses } from '@/state/validations';
-import { colors, radius } from '@/theme';
+import { colors } from '@/theme';
 
 type Vue = 'plan' | 'liste';
 
@@ -94,42 +93,18 @@ export default function CartesScreen() {
       )}
 
       <View style={[styles.entete, { top: insets.top }]}>
-        <Pressable
-          onPress={() => router.navigate('/prouesses')}
-          accessibilityRole="button"
-          accessibilityLabel="Rechercher une prouesse"
-          style={({ pressed }) => [styles.boutonRond, pressed && { opacity: 0.7 }]}
-        >
-          <Image source={require('../../../assets/icons/search-bold.svg')} style={styles.icone} contentFit="contain" />
-        </Pressable>
-
-        <SegmentedControl<Vue>
+        <BarreOutils<Vue>
           segments={[
             { valeur: 'plan', libelle: 'Plan' },
             { valeur: 'liste', libelle: 'Liste' },
           ]}
-          valeur={vue}
-          onChange={setVue}
+          vue={vue}
+          onChangeVue={setVue}
+          onRechercher={() => router.navigate('/prouesses')}
+          filtreActif={photosSeulement}
+          onFiltrer={() => setPhotosSeulement((actif) => !actif)}
+          libelleFiltre="Afficher uniquement les prouesses avec photos"
         />
-
-        <Pressable
-          onPress={() => setPhotosSeulement((actif) => !actif)}
-          accessibilityRole="switch"
-          accessibilityLabel="Afficher uniquement les prouesses avec photos"
-          accessibilityState={{ checked: photosSeulement }}
-          style={({ pressed }) => [
-            styles.boutonRond,
-            photosSeulement && styles.boutonActif,
-            pressed && { opacity: 0.7 },
-          ]}
-        >
-          <Image
-            source={require('../../../assets/icons/filter-sliders.svg')}
-            style={styles.icone}
-            contentFit="contain"
-            tintColor={photosSeulement ? colors.textOnLight : undefined}
-          />
-        </Pressable>
       </View>
     </View>
   );
@@ -157,25 +132,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     right: 0,
-    height: 48,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
     paddingHorizontal: 16,
-  },
-  boutonRond: {
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: radius.pill,
-  },
-  boutonActif: {
-    backgroundColor: colors.accentSecondary,
-  },
-  icone: {
-    width: 32,
-    height: 32,
   },
   liste: {
     paddingHorizontal: 16,

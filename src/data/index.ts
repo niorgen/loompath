@@ -18,6 +18,7 @@ export type ProuesseSource = {
   parc: string;
   land?: string;
   type?: TypeProuesse;
+  themes?: string[];
   code?: string;
   latitude?: number;
   longitude?: number;
@@ -153,4 +154,57 @@ export function calculerStats(prouesses: Prouesse[], parc?: string) {
   const perimetre = parc ? prouesses.filter((p) => p.parc === parc) : prouesses;
   const score = perimetre.filter((p) => p.obtenue).length;
   return { score, progression: perimetre.length ? score / perimetre.length : 0 };
+}
+
+// Chroniques : prouesses validées regroupées par période, de la plus récente à la plus ancienne.
+// Périodes : « Aujourd'hui », « Cette semaine » (depuis lundi), puis un groupe par mois.
+export type PeriodeChroniques = {
+  id: string;
+  titre: string;
+  /** Mois et année, ex. « octobre 2026 » */
+  mois: string;
+  prouesses: Prouesse[];
+};
+
+const debutDuJour = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+const formatMois = (d: Date) => d.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+const majuscule = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
+export const formatDateValidation = (iso: string) =>
+  new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+
+export function construireChroniques(prouesses: Prouesse[], maintenant = new Date()): PeriodeChroniques[] {
+  const aujourdhui = debutDuJour(maintenant);
+  const lundi = new Date(aujourdhui);
+  lundi.setDate(aujourdhui.getDate() - ((aujourdhui.getDay() + 6) % 7));
+
+  const periodes = new Map<string, PeriodeChroniques>();
+  const validees = prouesses
+    .filter((p) => p.dateValidation)
+    .sort((a, b) => b.dateValidation!.localeCompare(a.dateValidation!));
+
+  for (const prouesse of validees) {
+    const date = new Date(prouesse.dateValidation!);
+    const jour = debutDuJour(date);
+    const [id, titre] =
+      jour >= aujourdhui
+        ? ['aujourdhui', 'Aujourd’hui']
+        : jour >= lundi
+          ? ['semaine', 'Cette semaine']
+          : [`${date.getFullYear()}-${date.getMonth()}`, majuscule(date.toLocaleDateString('fr-FR', { month: 'long' }))];
+    let periode = periodes.get(id);
+    if (!periode) {
+      periode = { id, titre, mois: formatMois(date), prouesses: [] };
+      periodes.set(id, periode);
+    }
+    periode.prouesses.push(prouesse);
+  }
+  return [...periodes.values()];
+}
+
+// Thèmes affichés sur une carte souvenir : lieu, type, puis thèmes du CSV (sans doublon,
+// certains thèmes reprenant le land ou le type, ex. « Fantasyland », « Point photo »)
+export function themesDe(p: ProuesseSource) {
+  const themes = [p.land ?? p.parc, p.type && TYPE_LABELS[p.type].singulier, ...(p.themes ?? [])];
+  return [...new Set(themes.filter((t): t is string => !!t))];
 }

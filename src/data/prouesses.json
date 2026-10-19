@@ -335,6 +335,9 @@
     "parc": "Disneyland Park",
     "land": "Frontierland",
     "type": "Secret",
+    "themes": [
+      "Plantes"
+    ],
     "latitude": 48.870856,
     "longitude": 2.776717
   },
@@ -346,6 +349,9 @@
     "parc": "Disneyland Park",
     "land": "Frontierland",
     "type": "Secret",
+    "themes": [
+      "Plantes"
+    ],
     "latitude": 48.871457,
     "longitude": 2.775842
   },
@@ -357,6 +363,9 @@
     "parc": "Disneyland Park",
     "land": "Frontierland",
     "type": "Secret",
+    "themes": [
+      "Plantes"
+    ],
     "latitude": 48.871701,
     "longitude": 2.775204
   },
@@ -368,6 +377,9 @@
     "parc": "Disneyland Park",
     "land": "Adventureland",
     "type": "Secret",
+    "themes": [
+      "Plantes"
+    ],
     "latitude": 48.872105,
     "longitude": 2.772948
   },
@@ -379,6 +391,9 @@
     "parc": "Disneyland Park",
     "land": "Adventureland",
     "type": "Secret",
+    "themes": [
+      "Plantes"
+    ],
     "latitude": 48.873177,
     "longitude": 2.773707
   },
@@ -390,6 +405,9 @@
     "parc": "Disneyland Park",
     "land": "Fantasyland",
     "type": "Secret",
+    "themes": [
+      "Plantes"
+    ],
     "latitude": 48.874476,
     "longitude": 2.775448
   },
@@ -401,6 +419,9 @@
     "parc": "Disneyland Park",
     "land": "Discoveryland",
     "type": "Secret",
+    "themes": [
+      "Plantes"
+    ],
     "latitude": 48.874631,
     "longitude": 2.778173
   },
@@ -412,6 +433,9 @@
     "parc": "Disneyland Park",
     "land": "Discoveryland",
     "type": "Secret",
+    "themes": [
+      "Plantes"
+    ],
     "latitude": 48.874742,
     "longitude": 2.777959
   },
@@ -423,6 +447,9 @@
     "parc": "Disneyland Park",
     "land": "Discoveryland",
     "type": "Secret",
+    "themes": [
+      "Plantes"
+    ],
     "latitude": 48.873404,
     "longitude": 2.778919
   },
@@ -434,6 +461,9 @@
     "parc": "Disneyland Park",
     "land": "Discoveryland",
     "type": "Secret",
+    "themes": [
+      "Plantes"
+    ],
     "latitude": 48.873045,
     "longitude": 2.77864
   },
@@ -445,6 +475,9 @@
     "parc": "Disneyland Park",
     "land": "Fantasyland",
     "type": "Secret",
+    "themes": [
+      "Plantes"
+    ],
     "latitude": 48.872637,
     "longitude": 2.776049
   },
@@ -455,6 +488,9 @@
     "description": "Dans un massif, les jardiniers ont dessiné une tête de Mickey avec des fleurs : un grand rond et deux petits pour les oreilles. Cherchez cette tête fleurie dans les jardins, puis prenez-la en photo sous le meilleur angle pour bien voir les trois cercles.",
     "parc": "Disney Village",
     "type": "Point photo",
+    "themes": [
+      "Plantes"
+    ],
     "latitude": 48.869687,
     "longitude": 2.780539
   },
@@ -1280,6 +1316,9 @@
     "parc": "Disneyland Park",
     "land": "Frontierland",
     "type": "Secret",
+    "themes": [
+      "Point photo"
+    ],
     "latitude": 48.87205,
     "longitude": 2.77629
   },
@@ -1551,6 +1590,9 @@
     "land": "Main Street U.S.A.",
     "type": "Spectacles",
     "code": "P1GS07",
+    "themes": [
+      "Festival Halloween Disney"
+    ],
     "latitude": 48.867385,
     "longitude": 2.778213
   },
@@ -1748,7 +1790,10 @@
     "description": "Approchez, approchez ! L'Homme de l'Ombre adore les marchés : cartes de tarot en main, il vous promet de réaliser vos vœux grâce à ses amis de « l'autre côté ». Un conseil : ne signez rien avant la photo !",
     "parc": "Disneyland Park",
     "type": "Personnages",
-    "code": "P1M134"
+    "code": "P1M134",
+    "themes": [
+      "Festival Halloween Disney"
+    ]
   },
   {
     "id": "80",
@@ -1782,7 +1827,10 @@
     "description": "Bouh ! Dingo a sorti son plus beau costume de squelette pour Halloween, ce qui ne l'empêche pas de trébucher sur ses os. Parfois, c'est l'un de ses amis, tout aussi déguisé, qui vous attend : photo frissons et fous rires garantis.",
     "parc": "Disneyland Park",
     "type": "Personnages",
-    "code": "P1MG81"
+    "code": "P1MG81",
+    "themes": [
+      "Festival Halloween Disney"
+    ]
   },
   {
     "id": "82",
@@ -1835,7 +1883,10 @@
     "description": "Le roi des citrouilles s'ennuie de ses frayeurs : il rêve de nouveauté, et a même voulu faire Noël à sa façon ! Avec sa silhouette dégingandée et son grand sourire, Jack Skellington vous attend pour une photo à vous faire frissonner.",
     "parc": "Disneyland Park",
     "type": "Personnages",
-    "code": "P1MG19"
+    "code": "P1MG19",
+    "themes": [
+      "Festival Halloween Disney"
+    ]
   },
   {
     "id": "114",
@@ -1843,7 +1894,10 @@
     "sousTitre": "Retrouvez la poupée de chiffon Sally",
     "description": "Cousue de la tête aux pieds par le docteur Finkelstein, Sally ne manque ni d'ingéniosité ni de cœur, surtout quand il s'agit de Jack. Cette poupée de chiffon vous attend pour une photo, aux points de couture bien visibles.",
     "parc": "Disneyland Park",
-    "type": "Personnages"
+    "type": "Personnages",
+    "themes": [
+      "Festival Halloween Disney"
+    ]
   },
   {
     "id": "87",
@@ -1934,6 +1988,9 @@
     "land": "Fantasyland",
     "type": "Personnages",
     "code": "P1M116",
+    "themes": [
+      "Fantasyland"
+    ],
     "latitude": 48.874853,
     "longitude": 2.775496
   },
@@ -1945,6 +2002,9 @@
     "parc": "Disneyland Park",
     "land": "Fantasyland",
     "type": "Personnages",
+    "themes": [
+      "Fantasyland"
+    ],
     "latitude": 48.874853,
     "longitude": 2.775496
   },
@@ -1956,6 +2016,9 @@
     "parc": "Disneyland Park",
     "land": "Fantasyland",
     "type": "Personnages",
+    "themes": [
+      "Fantasyland"
+    ],
     "latitude": 48.874853,
     "longitude": 2.775496
   },
@@ -1967,6 +2030,9 @@
     "parc": "Disneyland Park",
     "land": "Fantasyland",
     "type": "Personnages",
+    "themes": [
+      "Fantasyland"
+    ],
     "latitude": 48.874853,
     "longitude": 2.775496
   },
@@ -1978,6 +2044,9 @@
     "parc": "Disneyland Park",
     "land": "Fantasyland",
     "type": "Personnages",
+    "themes": [
+      "Fantasyland"
+    ],
     "latitude": 48.874853,
     "longitude": 2.775496
   },
@@ -1989,6 +2058,9 @@
     "parc": "Disneyland Park",
     "land": "Fantasyland",
     "type": "Personnages",
+    "themes": [
+      "Fantasyland"
+    ],
     "latitude": 48.874853,
     "longitude": 2.775496
   },
@@ -2000,6 +2072,9 @@
     "parc": "Disneyland Park",
     "land": "Fantasyland",
     "type": "Personnages",
+    "themes": [
+      "Fantasyland"
+    ],
     "latitude": 48.874853,
     "longitude": 2.775496
   },
@@ -2011,6 +2086,9 @@
     "parc": "Disneyland Park",
     "land": "Fantasyland",
     "type": "Personnages",
+    "themes": [
+      "Fantasyland"
+    ],
     "latitude": 48.874853,
     "longitude": 2.775496
   },
@@ -2044,7 +2122,10 @@
     "sousTitre": "Défiez la Méchante Reine",
     "description": "Vaniteuse et cruelle, la Méchante Reine ne supporte pas qu'on lui dispute le titre de plus belle du royaume. Elle vous toisera avant de vous accorder une photo, mais ne lui tendez surtout pas de pomme.",
     "parc": "Disneyland Park",
-    "type": "Personnages"
+    "type": "Personnages",
+    "themes": [
+      "Festival Halloween Disney"
+    ]
   },
   {
     "id": "242",
@@ -2052,7 +2133,10 @@
     "sousTitre": "Affrontez la sorcière Maléfique",
     "description": "Reine des ténèbres au regard glacial, Maléfique n'a jamais pardonné de ne pas avoir été invitée au baptême d'Aurore. Elle vous accorde une photo, mais restez sur vos gardes : sa malédiction n'est jamais très loin.",
     "parc": "Disneyland Park",
-    "type": "Personnages"
+    "type": "Personnages",
+    "themes": [
+      "Festival Halloween Disney"
+    ]
   },
   {
     "id": "243",
@@ -2060,7 +2144,10 @@
     "sousTitre": "Admirez la fourrure de Cruella",
     "description": "Excentrique et capricieuse, Cruella d'Enfer n'a qu'une passion : la fourrure, surtout celle à pois noirs et blancs. Elle pose avec élégance pour la photo, avec un rire strident, mais gardez un œil sur les dalmatiens !",
     "parc": "Disneyland Park",
-    "type": "Personnages"
+    "type": "Personnages",
+    "themes": [
+      "Festival Halloween Disney"
+    ]
   },
   {
     "id": "244",
@@ -2068,7 +2155,10 @@
     "sousTitre": "Bombez le torse avec Gaston",
     "description": "Chasseur vaniteux, Gaston est persuadé d'être le plus beau, le plus fort et le plus admiré de tous. Il gonfle les muscles, soigne sa pose et attend que vous admiriez le résultat sur la photo.",
     "parc": "Disneyland Park",
-    "type": "Personnages"
+    "type": "Personnages",
+    "themes": [
+      "Festival Halloween Disney"
+    ]
   },
   {
     "id": "245",
@@ -2076,7 +2166,10 @@
     "sousTitre": "Croisez la belle-mère de Cendrillon",
     "description": "Hautaine et autoritaire, Madame de Trémaine règne sur sa maison d'une main de fer et ne supporte pas qu'on lui tienne tête. Elle vous accorde un instant pour une photo, avec un regard qui en dit long sur son opinion de vous.",
     "parc": "Disneyland Park",
-    "type": "Personnages"
+    "type": "Personnages",
+    "themes": [
+      "Festival Halloween Disney"
+    ]
   },
   {
     "id": "246",
@@ -2084,7 +2177,10 @@
     "sousTitre": "Faites la révérence à Javotte",
     "description": "Capricieuse et jalouse, Javotte, l'une des filles de Madame de Trémaine, ne supporte pas qu'on la dépasse en élégance. Elle prend la pose pour une photo, le menton bien haut, en espérant que vous la trouviez ravissante.",
     "parc": "Disneyland Park",
-    "type": "Personnages"
+    "type": "Personnages",
+    "themes": [
+      "Festival Halloween Disney"
+    ]
   },
   {
     "id": "247",
@@ -2092,7 +2188,10 @@
     "sousTitre": "Saluez la prétentieuse Anastasie",
     "description": "L'autre fille de Madame de Trémaine, Anastasie, a le même goût que sa mère et sa sœur pour les belles robes et les mauvaises manières. Elle vous accorde une photo, mais ne comptez pas trop sur sa gentillesse.",
     "parc": "Disneyland Park",
-    "type": "Personnages"
+    "type": "Personnages",
+    "themes": [
+      "Festival Halloween Disney"
+    ]
   },
   {
     "id": "127",
@@ -2266,6 +2365,9 @@
     "description": "Halloween ouvre des portes qui n'existent pas le reste de l'année ! Des êtres mystiques les ont disséminées dans les lands, et chacune cache un indice coloré. Pour débuter, récupérez la carte à Boardwalk Candy Palace, où une friandise M&M's vous attend au retour.",
     "parc": "Disneyland Park",
     "type": "Chasse au trésor",
+    "themes": [
+      "Festival Halloween Disney"
+    ],
     "latitude": 48.871505,
     "longitude": 2.778549
   },
@@ -2287,7 +2389,10 @@
     "description": "Pendant la World Princess Week, les princesses Disney se retrouvent sur la scène du château pour revivre leurs plus beaux souvenirs en chansons. Merida, Cendrillon, Belle, Vaiana et Ariel, accompagnées de chanteurs en direct, interprètent un medley de leurs chansons les plus célèbres.",
     "parc": "Disneyland Park",
     "type": "Spectacles",
-    "code": "P1GS93"
+    "code": "P1GS93",
+    "themes": [
+      "World Princess Week"
+    ]
   },
   {
     "id": "77",
@@ -4091,6 +4196,9 @@
     "parc": "Hôtels",
     "land": "Disney Hotel Santa Fe",
     "type": "Secret",
+    "themes": [
+      "Point photo"
+    ],
     "latitude": 48.873192,
     "longitude": 2.794036
   },

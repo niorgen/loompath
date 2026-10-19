@@ -37,6 +37,12 @@ function coordonnees(brut) {
   return Number.isFinite(latitude) && Number.isFinite(longitude) ? { latitude, longitude } : {};
 }
 
+// Colonnes « Thème 4/5/6 » -> { themes: [...] } (absent si aucune n'est renseignée)
+function themes(l) {
+  const liste = ["Thème 4", "Thème 5", "Thème 6"].map(c => l[c]).filter(Boolean);
+  return liste.length ? { themes: liste } : {};
+}
+
 const lignes = parseCSV(readFileSync(SRC, "utf8"));
 const prouesses = lignes
   .filter(l => STATUTS_RETENUS.has(l["Statut"]))
@@ -49,6 +55,7 @@ const prouesses = lignes
     land: l["Catégorie : Land"] || undefined,
     type: l["Type"] || undefined,
     code: l["Code (source)"] || undefined,
+    ...themes(l),
     ...coordonnees(l["Coordonnées GPS"]),
   }));
 

@@ -1,8 +1,7 @@
 import { Image } from 'expo-image';
-import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { usePhotoAffichable } from '@/state/photos';
+import { useSourcePhoto } from '@/hooks/useSourcePhoto';
 import { colors, fonts, normalLineHeight, radius } from '@/theme';
 
 type Props = {
@@ -12,13 +11,9 @@ type Props = {
   libelle: string;
 };
 
-// Cadre de l'illustration : photo de validation, sinon emplacement en pointillés.
-// La photo d'origine peut disparaître (URL blob: sur le web après rechargement, cache vidé
-// sur mobile) : on retombe alors sur la miniature conservée avec la validation.
+// Cadre de l'illustration : photo de validation (ou sa miniature), sinon emplacement en pointillés
 export function FenetreAstrale({ photoUri, miniature, libelle }: Props) {
-  const photo = usePhotoAffichable(photoUri);
-  const [uriIllisible, setUriIllisible] = useState<string>();
-  const source = photo && photo !== uriIllisible ? photo : miniature;
+  const { source, onError } = useSourcePhoto(photoUri, miniature);
 
   return (
     <View style={styles.cadre}>
@@ -28,9 +23,7 @@ export function FenetreAstrale({ photoUri, miniature, libelle }: Props) {
           style={styles.photo}
           contentFit="cover"
           accessibilityLabel={libelle}
-          onError={() => {
-            if (source === photo) setUriIllisible(photo);
-          }}
+          onError={onError}
         />
       ) : (
         <View style={styles.illustration}>

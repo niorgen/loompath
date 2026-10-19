@@ -9,6 +9,7 @@ const ONGLETS: Partial<Record<Destination, { route: string; href: Href }>> = {
   journal: { route: 'index', href: '/' },
   prouesse: { route: 'prouesses', href: '/prouesses' },
   cartes: { route: 'cartes', href: '/cartes' },
+  chroniques: { route: 'chroniques', href: '/chroniques' },
 };
 
 function TabBar({ state, navigation }: BottomTabBarProps) {
@@ -41,6 +42,7 @@ export default function TabsLayout() {
       <Tabs.Screen name="index" />
       <Tabs.Screen name="prouesses" />
       <Tabs.Screen name="cartes" />
+      <Tabs.Screen name="chroniques" />
     </Tabs>
   );
 }
