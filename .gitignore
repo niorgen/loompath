@@ -40,3 +40,6 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# ancienne version du CSV, gardée en local
+src/data/prouesses_old.csv
