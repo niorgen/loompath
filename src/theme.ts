@@ -1,0 +1,44 @@
+// Tokens issus du Figma Loompath (fichier CnUNdVoaoc5vBHQH8xrdB3)
+export const colors = {
+  background: '#050816',
+  surface: '#151e43',
+  surfaceRaised: '#18234f',
+  surfaceRow: '#10183a',
+  surfaceSunken: '#111a36',
+  surfacePlaceholder: '#1b2a5b',
+  surfaceIllustration: '#212d58',
+  action: '#4e97de',
+  textOnAction: '#fffdf7',
+  border: '#4e6094',
+  borderCard: '#5368a3',
+  borderNav: 'rgba(76,96,148,0.78)',
+  textPrimary: '#f3efff',
+  textPrimaryAlt: '#f2eeff',
+  textSecondary: '#a8b0d3',
+  textNavInactive: '#a8aed2',
+  textOnLight: '#17203a',
+  accent: '#cab5ff',
+  accentSecondary: '#c9b5ff',
+} as const;
+
+export const radius = {
+  sm: 8,
+  md: 12,
+  xl: 24,
+  pill: 999,
+} as const;
+
+export const fonts = {
+  interRegular: 'Inter_400Regular',
+  interBold: 'Inter_700Bold',
+  interExtraBold: 'Inter_800ExtraBold',
+  loraBold: 'Lora_700Bold',
+} as const;
+
+// Hauteur de ligne « normal » d'Inter (~1.21 × taille)
+export const normalLineHeight = (size: number) => Math.round(size * 1.21);
+
+export const shadows = {
+  card: '0px 12px 32px 0px rgba(2,6,23,0.33)',
+  nav: '0px 10px 12px 0px rgba(2,6,23,0.48)',
+} as const;
