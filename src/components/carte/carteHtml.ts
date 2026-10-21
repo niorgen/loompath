@@ -35,6 +35,48 @@ const TUILES = `https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png${
   CLE_CARTO ? `?key=${encodeURIComponent(CLE_CARTO)}` : ''
 }`;
 
+// Emprise du resort (prouesses du CSV, du Davy Crockett Ranch au nord des hôtels) + une marge :
+// aucune tuile n'est chargée en dehors, et la carte ne peut pas s'en éloigner
+const EMPRISE = [
+  [48.828, 2.763],
+  [48.882, 2.833],
+];
+const ZOOM_MIN = 13;
+
+// Le fond Dark Matter est en niveaux de gris : chaque gris est remplacé par une couleur du thème
+// (luminance -> couleur). Fond de carte ~0.1, bâtiments ~0.2, routes ~0.25, libellés ~0.45.
+// Appliqué aux seules tuiles : pins et photos gardent leurs couleurs.
+const DEGRADE_TUILES: [number, string][] = [
+  [0, colors.background],
+  [0.1, colors.surfaceRow],
+  [0.2, colors.surfacePlaceholder],
+  [0.3, colors.border],
+  [0.5, colors.action],
+  [0.7, colors.accent],
+  [1, colors.textPrimary],
+];
+
+// Tables feComponentTransfer (R, G, B) échantillonnant le dégradé ci-dessus
+function tablesDegrade(echantillons = 21) {
+  const canal = (hex: string, i: number) => parseInt(hex.slice(1 + i * 2, 3 + i * 2), 16) / 255;
+  return [0, 1, 2].map((i) =>
+    Array.from({ length: echantillons }, (_, n) => {
+      const t = n / (echantillons - 1);
+      const fin = DEGRADE_TUILES.findIndex(([position]) => position >= t);
+      const [p1, c1] = DEGRADE_TUILES[Math.max(fin - 1, 0)];
+      const [p2, c2] = DEGRADE_TUILES[fin];
+      const k = p2 === p1 ? 0 : (t - p1) / (p2 - p1);
+      return (canal(c1, i) + (canal(c2, i) - canal(c1, i)) * k).toFixed(3);
+    }).join(' '),
+  );
+}
+
+const [TABLE_R, TABLE_V, TABLE_B] = tablesDegrade();
+const FILTRE_TUILES = `<svg width="0" height="0" style="position:absolute"><filter id="teinte" color-interpolation-filters="sRGB">
+<feColorMatrix type="matrix" values="0.2126 0.7152 0.0722 0 0  0.2126 0.7152 0.0722 0 0  0.2126 0.7152 0.0722 0 0  0 0 0 1 0"/>
+<feComponentTransfer><feFuncR type="table" tableValues="${TABLE_R}"/><feFuncG type="table" tableValues="${TABLE_V}"/><feFuncB type="table" tableValues="${TABLE_B}"/></feComponentTransfer>
+</filter></svg>`;
+
 const LEAFLET = 'https://unpkg.com/leaflet@1.9.4/dist';
 const CLUSTER = 'https://unpkg.com/leaflet.markercluster@1.5.3/dist';
 
@@ -56,6 +98,7 @@ export function construireHtmlCarte({ margeBas }: { margeBas: number }) {
 <style>
   html, body, #carte { margin: 0; height: 100%; background: ${colors.background}; }
   .leaflet-container { background: ${colors.background}; font-family: Inter, system-ui, sans-serif; }
+  .leaflet-tile-pane { filter: url(#teinte); }
   .leaflet-bottom { bottom: ${margeBas}px; }
   .leaflet-control-attribution {
     background: rgba(5, 8, 22, 0.6) !important; color: ${colors.textSecondary};
@@ -87,6 +130,7 @@ export function construireHtmlCarte({ margeBas }: { margeBas: number }) {
 </style>
 </head>
 <body>
+${FILTRE_TUILES}
 <div id="carte"></div>
 <script src="${LEAFLET}/leaflet.js"></script>
 <script src="${CLUSTER}/leaflet.markercluster.js"></script>
@@ -99,12 +143,21 @@ export function construireHtmlCarte({ margeBas }: { margeBas: number }) {
     else if (window.parent !== window) window.parent.postMessage(json, '*');
   }
 
-  var carte = L.map('carte', { zoomControl: false, attributionControl: true });
+  var EMPRISE = ${JSON.stringify(EMPRISE)};
+  var carte = L.map('carte', {
+    zoomControl: false,
+    attributionControl: true,
+    minZoom: ${ZOOM_MIN},
+    maxBounds: EMPRISE,
+    maxBoundsViscosity: 1,
+  });
   carte.attributionControl.setPrefix(false);
   carte.setView([48.8705, 2.7775], 16);
 
   L.tileLayer(${JSON.stringify(TUILES)}, {
     subdomains: 'abcd',
+    bounds: EMPRISE,
+    minZoom: ${ZOOM_MIN},
     maxZoom: 20,
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
   }).addTo(carte);

@@ -80,6 +80,10 @@ export function construireProuesses(validations: Validations): Prouesse[] {
   });
 }
 
+// « Parcs » du CSV qui ne sont pas des parcs à thème : regroupés sous « Resort » dans le carnet
+const RESORT = ['Hôtels', 'Disney Village'];
+export const estResort = (parc: string) => RESORT.includes(parc);
+
 // Une prouesse appartient à trois catégories à la fois : son parc, son land et son type
 // (land et type peuvent manquer, ex. les prouesses d'hôtel sans type)
 export type NiveauCategorie = 'parc' | 'land' | 'type';
@@ -156,29 +160,42 @@ export function calculerStats(prouesses: Prouesse[], parc?: string) {
   return { score, progression: perimetre.length ? score / perimetre.length : 0 };
 }
 
-// Chroniques : prouesses validées regroupées par période, de la plus récente à la plus ancienne.
-// Périodes : « Aujourd'hui », « Cette semaine » (depuis lundi), puis un groupe par mois.
-export type PeriodeChroniques = {
+// Chroniques : prouesses validées regroupées en étapes de la frise, de la plus récente à la plus ancienne.
+// Mois en cours : une étape par jour (« Aujourd'hui », « Hier », « Lundi 12 octobre »).
+// Mois précédents : une étape résumée par mois (« Septembre 2026 »).
+export type EtapeChroniques = {
   id: string;
   titre: string;
-  /** Mois et année, ex. « octobre 2026 » */
-  mois: string;
+  /** Ex. « mar. 20 oct. · 3 souvenirs » */
+  meta: string;
+  /** Étape d'un mois passé, affichée en aperçu */
+  resume: boolean;
   prouesses: Prouesse[];
 };
 
 const debutDuJour = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
-const formatMois = (d: Date) => d.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
 const majuscule = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+const cleJour = (d: Date) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
 
 export const formatDateValidation = (iso: string) =>
   new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
 
-export function construireChroniques(prouesses: Prouesse[], maintenant = new Date()): PeriodeChroniques[] {
-  const aujourdhui = debutDuJour(maintenant);
-  const lundi = new Date(aujourdhui);
-  lundi.setDate(aujourdhui.getDate() - ((aujourdhui.getDay() + 6) % 7));
+export const formatHeureValidation = (iso: string) =>
+  new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 
-  const periodes = new Map<string, PeriodeChroniques>();
+export const compterSouvenirs = (n: number) => `${n} souvenir${n > 1 ? 's' : ''}`;
+
+// Une visite au parc = un jour où au moins une prouesse a été validée
+export const compterVisites = (prouesses: Prouesse[]) =>
+  new Set(prouesses.filter((p) => p.dateValidation).map((p) => cleJour(new Date(p.dateValidation!)))).size;
+
+export function construireChroniques(prouesses: Prouesse[], maintenant = new Date()): EtapeChroniques[] {
+  const aujourdhui = debutDuJour(maintenant);
+  const hier = new Date(aujourdhui);
+  hier.setDate(aujourdhui.getDate() - 1);
+  const debutDuMois = new Date(aujourdhui.getFullYear(), aujourdhui.getMonth(), 1);
+
+  const etapes = new Map<string, EtapeChroniques>();
   const validees = prouesses
     .filter((p) => p.dateValidation)
     .sort((a, b) => b.dateValidation!.localeCompare(a.dateValidation!));
@@ -186,20 +203,34 @@ export function construireChroniques(prouesses: Prouesse[], maintenant = new Dat
   for (const prouesse of validees) {
     const date = new Date(prouesse.dateValidation!);
     const jour = debutDuJour(date);
-    const [id, titre] =
-      jour >= aujourdhui
-        ? ['aujourdhui', 'Aujourd’hui']
-        : jour >= lundi
-          ? ['semaine', 'Cette semaine']
-          : [`${date.getFullYear()}-${date.getMonth()}`, majuscule(date.toLocaleDateString('fr-FR', { month: 'long' }))];
-    let periode = periodes.get(id);
-    if (!periode) {
-      periode = { id, titre, mois: formatMois(date), prouesses: [] };
-      periodes.set(id, periode);
+    const resume = jour < debutDuMois;
+    const id = resume ? `${date.getFullYear()}-${date.getMonth()}` : cleJour(date);
+    let etape = etapes.get(id);
+    if (!etape) {
+      const titre = resume
+        ? majuscule(date.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }))
+        : jour >= aujourdhui
+          ? 'Aujourd’hui'
+          : jour >= hier
+            ? 'Hier'
+            : majuscule(date.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }));
+      etape = { id, titre, meta: '', resume, prouesses: [] };
+      etapes.set(id, etape);
     }
-    periode.prouesses.push(prouesse);
+    etape.prouesses.push(prouesse);
   }
-  return [...periodes.values()];
+
+  return [...etapes.values()].map((etape) => {
+    const nombre = compterSouvenirs(etape.prouesses.length);
+    // Aujourd'hui et Hier rappellent la date, les autres titres la contiennent déjà
+    const rappel = !etape.resume && !/\d/.test(etape.titre);
+    const date = new Date(etape.prouesses[0].dateValidation!).toLocaleDateString('fr-FR', {
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short',
+    });
+    return { ...etape, meta: rappel ? `${date} · ${nombre}` : nombre };
+  });
 }
 
 // Thèmes affichés sur une carte souvenir : lieu, type, puis thèmes du CSV (sans doublon,

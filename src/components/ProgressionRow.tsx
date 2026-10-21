@@ -2,6 +2,7 @@ import { Image } from 'expo-image';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { ListRow } from '@/components/ListRow';
+import { Picto, pictoDe } from '@/components/Picto';
 import { colors, fonts, normalLineHeight, radius } from '@/theme';
 
 type Props = {
@@ -11,7 +12,7 @@ type Props = {
   onPress?: () => void;
 };
 
-// Ligne du carnet : nom de la catégorie + jauge des prouesses obtenues
+// Ligne du carnet : picto de la catégorie (étincelles à défaut), nom + jauge des prouesses obtenues
 export function ProgressionRow({ titre, obtenues, total, onPress }: Props) {
   const ratio = total > 0 ? Math.min(obtenues / total, 1) : 0;
   const niveau = `Prouesses ${obtenues} sur ${total}`;
@@ -19,6 +20,7 @@ export function ProgressionRow({ titre, obtenues, total, onPress }: Props) {
   return (
     <ListRow
       onPress={onPress}
+      icone={pictoDe(titre) ? <Picto nom={titre} taille={18} /> : undefined}
       accessibilityLabel={`${titre}, ${niveau}`}
       trailing={
         <Image

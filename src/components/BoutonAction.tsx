@@ -1,5 +1,7 @@
+import { Image } from 'expo-image';
 import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
 
+import { Picto } from '@/components/Picto';
 import { colors, fonts, normalLineHeight, radius } from '@/theme';
 
 type Props = {
@@ -7,9 +9,13 @@ type Props = {
   onPress: () => void;
   disabled?: boolean;
   chargement?: boolean;
+  /** Picto de la planche avant le libellé (ex. « Point photo » pour l'appareil photo) */
+  picto?: string;
+  /** Flèche après le libellé (« Lancer la quête → ») */
+  fleche?: boolean;
 };
 
-export function BoutonAction({ libelle, onPress, disabled, chargement }: Props) {
+export function BoutonAction({ libelle, onPress, disabled, chargement, picto, fleche }: Props) {
   const inactif = disabled || chargement;
   return (
     <Pressable
@@ -26,7 +32,18 @@ export function BoutonAction({ libelle, onPress, disabled, chargement }: Props) 
       {chargement ? (
         <ActivityIndicator color={colors.textOnAction} />
       ) : (
-        <Text style={[styles.libelle, disabled && styles.libelleInactif]}>{libelle}</Text>
+        <>
+          {picto ? <Picto nom={picto} couleur={disabled ? colors.textSecondary : colors.textOnAction} /> : null}
+          <Text style={[styles.libelle, disabled && styles.libelleInactif]}>{libelle}</Text>
+          {fleche ? (
+            <Image
+              source={require('../../assets/icons/arrow-right.svg')}
+              style={styles.fleche}
+              contentFit="contain"
+              tintColor={disabled ? colors.textSecondary : undefined}
+            />
+          ) : null}
+        </>
       )}
     </Pressable>
   );
@@ -55,5 +72,9 @@ const styles = StyleSheet.create({
   },
   libelleInactif: {
     color: colors.textSecondary,
+  },
+  fleche: {
+    width: 16,
+    height: 16,
   },
 });

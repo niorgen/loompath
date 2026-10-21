@@ -96,6 +96,17 @@ export async function validerProuesse(prouesseId: string, photoTemporaire: strin
   if (existante && existante.photoUri !== photoUri) await supprimerPhoto(existante.photoUri);
 }
 
+// Supprime la photo d'une prouesse : sans photo, la validation n'a plus de preuve et est annulée
+export async function supprimerValidation(prouesseId: string) {
+  const existante = validations[prouesseId];
+  if (!existante) return;
+  const restantes = { ...validations };
+  delete restantes[prouesseId];
+  publier(restantes);
+  await AsyncStorage.setItem(CLE_STOCKAGE, JSON.stringify(validations));
+  await supprimerPhoto(existante.photoUri);
+}
+
 function sAbonner(notifier: () => void) {
   abonnes.add(notifier);
   return () => abonnes.delete(notifier);

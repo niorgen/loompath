@@ -9,6 +9,7 @@ export const colors = {
   surfaceIllustration: '#212d58',
   surfacePhoto: '#171d32',
   action: '#4e97de',
+  actionSecondary: '#477fc4',
   textOnAction: '#fffdf7',
   border: '#4e6094',
   borderCard: '#5368a3',

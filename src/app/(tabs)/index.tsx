@@ -45,7 +45,7 @@ export default function JournalScreen() {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        <HeaderTitle surtitre={`Bonjour, ${journal.voyageur}`} titre="Journal de voyage" />
+        <HeaderTitle surtitre={`Bonjour, ${journal.voyageur}`} titre="Journal" />
 
         {refusee ? <MessageLocalisation onAutoriser={autoriser} /> : null}
 
@@ -61,7 +61,7 @@ export default function JournalScreen() {
 
         {recentes.length > 0 ? (
           <View style={styles.section}>
-            <SectionHeader surtitre="Prouesses" titre="Récemment obtenus" onPress={() => {}} />
+            <SectionHeader surtitre="Prouesses" titre="Récemment obtenus" onPress={() => router.navigate('/chroniques')} />
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -84,15 +84,13 @@ export default function JournalScreen() {
         ) : null}
 
         <View style={styles.section}>
-          <SectionHeader surtitre="Prouesses" titre="A proximités" onPress={() => {}} />
+          <SectionHeader surtitre="Prouesses" titre="A proximités" onPress={() => router.navigate('/cartes')} />
           <View style={styles.liste}>
             {proches.map((prouesse) => (
               <ProuesseRow
                 key={prouesse.id}
                 titre={prouesse.titre}
-                meta={[prouesse.type && TYPE_LABELS[prouesse.type].singulier, prouesse.land ?? prouesse.parc]
-                  .filter(Boolean)
-                  .join(' · ')}
+                meta={prouesse.sousTitre}
                 distance={formatDistance(prouesse.distanceKm)}
                 onPress={() => router.push(`/prouesse/${prouesse.id}`)}
               />

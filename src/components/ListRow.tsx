@@ -7,12 +7,14 @@ import { colors, radius } from '@/theme';
 type Props = {
   children: ReactNode;
   trailing?: ReactNode;
+  /** Remplace les étincelles du repère (ex. picto de la catégorie) */
+  icone?: ReactNode;
   accessibilityLabel?: string;
   onPress?: () => void;
 };
 
 // « Row/List » du design : repère étincelles + contenu + élément de fin
-export function ListRow({ children, trailing, accessibilityLabel, onPress }: Props) {
+export function ListRow({ children, trailing, icone, accessibilityLabel, onPress }: Props) {
   return (
     <Pressable
       onPress={onPress}
@@ -21,11 +23,13 @@ export function ListRow({ children, trailing, accessibilityLabel, onPress }: Pro
       style={({ pressed }) => [styles.row, pressed && { opacity: 0.8 }]}
     >
       <View style={styles.repere}>
-        <Image
-          source={require('../../assets/icons/sparkles.svg')}
-          style={styles.sparkles}
-          contentFit="contain"
-        />
+        {icone ?? (
+          <Image
+            source={require('../../assets/icons/sparkles.svg')}
+            style={styles.sparkles}
+            contentFit="contain"
+          />
+        )}
       </View>
       <View style={styles.contenu}>{children}</View>
       {trailing}

@@ -1,13 +1,13 @@
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { GrilleCategories } from '@/components/GrilleCategories';
 import { HeaderTitle } from '@/components/HeaderTitle';
 import { NAV_HEIGHT } from '@/components/NavigationMenu';
-import { ProgressionRow } from '@/components/ProgressionRow';
 import { SearchField } from '@/components/SearchField';
-import { rechercherCarnet } from '@/data';
+import { estResort, rechercherCarnet } from '@/data';
 import { useCarnet } from '@/state/validations';
 import { colors, fonts } from '@/theme';
 
@@ -16,34 +16,40 @@ export default function CarnetScreen() {
   const [recherche, setRecherche] = useState('');
   const carnet = useCarnet();
   const resultats = useMemo(() => rechercherCarnet(carnet, recherche), [carnet, recherche]);
+  const enRecherche = !!recherche.trim();
+
+  // Les lands se consultent depuis la page de leur parc ; ils ne remontent ici qu'en recherche
+  const sections = [
+    { titre: 'Parcs', categories: resultats.filter((c) => c.niveau === 'parc' && !estResort(c.nom)) },
+    { titre: 'Resort', categories: resultats.filter((c) => c.niveau === 'parc' && estResort(c.nom)) },
+    { titre: 'Lands', categories: enRecherche ? resultats.filter((c) => c.niveau === 'land') : [] },
+    { titre: 'Catégories', categories: resultats.filter((c) => c.niveau === 'type') },
+  ].filter((s) => s.categories.length);
 
   return (
-    <View style={styles.screen}>
-      <View style={[styles.entete, { paddingTop: insets.top + 16 }]}>
-        <HeaderTitle titre="Carnets des prouesses" />
-        <SearchField value={recherche} onChangeText={setRecherche} />
-      </View>
+    <ScrollView
+      style={styles.screen}
+      contentContainerStyle={[styles.contenu, { paddingTop: insets.top + 16, paddingBottom: NAV_HEIGHT + insets.bottom + 24 }]}
+      keyboardDismissMode="on-drag"
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+    >
+      <HeaderTitle titre="Prouesses" />
+      <SearchField value={recherche} onChangeText={setRecherche} placeholder="Rechercher une attraction…" />
 
-      <FlatList
-        data={resultats}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <ProgressionRow
-            titre={item.nom}
-            obtenues={item.obtenues}
-            total={item.total}
-            onPress={() => router.push(`/prouesses/${item.id}`)}
-          />
-        )}
-        contentContainerStyle={[styles.liste, { paddingBottom: NAV_HEIGHT + insets.bottom + 24 }]}
-        keyboardDismissMode="on-drag"
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={
-          <Text style={styles.vide}>Aucune catégorie ne correspond à « {recherche.trim()} ».</Text>
-        }
-      />
-    </View>
+      {sections.map((section) => (
+        <View key={section.titre} style={styles.section}>
+          <Text style={styles.titreSection} accessibilityRole="header">
+            {section.titre}
+          </Text>
+          <GrilleCategories categories={section.categories} onPress={(c) => router.push(`/prouesses/${c.id}`)} />
+        </View>
+      ))}
+
+      {!sections.length ? (
+        <Text style={styles.vide}>Aucune catégorie ne correspond à « {recherche.trim()} ».</Text>
+      ) : null}
+    </ScrollView>
   );
 }
 
@@ -52,14 +58,18 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  entete: {
+  contenu: {
     paddingHorizontal: 16,
-    paddingBottom: 24,
     gap: 24,
   },
-  liste: {
-    paddingHorizontal: 16,
-    gap: 8,
+  section: {
+    gap: 16,
+  },
+  titreSection: {
+    fontFamily: fonts.loraBold,
+    fontSize: 23,
+    lineHeight: 23 * 1.1,
+    color: colors.textPrimaryAlt,
   },
   vide: {
     fontFamily: fonts.interRegular,
