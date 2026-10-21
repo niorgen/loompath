@@ -2,27 +2,17 @@ import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Alert, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Badge } from '@/components/Badge';
 import { BoutonAction } from '@/components/BoutonAction';
+import { confirmer } from '@/components/confirmer';
 import { HeaderTitle } from '@/components/HeaderTitle';
 import { TYPE_LABELS } from '@/data';
 import { useSourcePhoto } from '@/hooks/useSourcePhoto';
 import { supprimerValidation, useProuesses, validerProuesse } from '@/state/validations';
 import { colors, fonts, normalLineHeight, radius } from '@/theme';
-
-// Alert n'affiche pas de boutons sur le web : on passe par la confirmation du navigateur
-function confirmer(titre: string, message: string, libelle: string) {
-  if (Platform.OS === 'web') return Promise.resolve(window.confirm(`${titre}\n\n${message}`));
-  return new Promise<boolean>((resolve) =>
-    Alert.alert(titre, message, [
-      { text: 'Annuler', style: 'cancel', onPress: () => resolve(false) },
-      { text: libelle, style: 'destructive', onPress: () => resolve(true) },
-    ]),
-  );
-}
 
 export default function ProuesseScreen() {
   const insets = useSafeAreaInsets();

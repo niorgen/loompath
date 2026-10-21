@@ -10,9 +10,10 @@ import { ProuesseRow } from '@/components/ProuesseRow';
 import { SectionHeader } from '@/components/SectionHeader';
 import { ServiceCard } from '@/components/ServiceCard';
 import { StatCards } from '@/components/StatCards';
-import { calculerStats, journal, TYPE_LABELS } from '@/data';
+import { calculerStats, TYPE_LABELS } from '@/data';
 import { useParcDuJoueur, usePositionJoueur } from '@/hooks/usePositionJoueur';
 import { formatDistance, useProuessesProches } from '@/hooks/useProuessesProches';
+import { useProfil } from '@/state/profil';
 import { useProuesses } from '@/state/validations';
 import { colors } from '@/theme';
 
@@ -22,6 +23,7 @@ export default function JournalScreen() {
   const parc = useParcDuJoueur(position);
   const proches = useProuessesProches(position, 5);
   const prouesses = useProuesses();
+  const { nom } = useProfil();
   const statsGlobales = useMemo(() => calculerStats(prouesses), [prouesses]);
   // Stats du parc où se trouve le joueur (aucune hors des parcs ou sans localisation)
   const statsParc = useMemo(() => (parc ? calculerStats(prouesses, parc) : undefined), [prouesses, parc]);
@@ -45,7 +47,7 @@ export default function JournalScreen() {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        <HeaderTitle surtitre={`Bonjour, ${journal.voyageur}`} titre="Journal" />
+        <HeaderTitle surtitre={nom ? `Bonjour, ${nom}` : 'Bonjour'} titre="Journal" />
 
         {refusee ? <MessageLocalisation onAutoriser={autoriser} /> : null}
 

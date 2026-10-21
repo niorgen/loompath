@@ -107,6 +107,14 @@ export async function supprimerValidation(prouesseId: string) {
   await supprimerPhoto(existante.photoUri);
 }
 
+// « Tout effacer » du Profil : toutes les validations et leurs photos
+export async function effacerValidations() {
+  const photos = Object.values(validations).map((v) => v.photoUri);
+  publier({});
+  await AsyncStorage.removeItem(CLE_STOCKAGE);
+  await Promise.all(photos.map(supprimerPhoto));
+}
+
 function sAbonner(notifier: () => void) {
   abonnes.add(notifier);
   return () => abonnes.delete(notifier);

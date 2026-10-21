@@ -18,18 +18,21 @@ export function distanceKm(a: Coords, b: Coords) {
 }
 
 // Position actuelle du joueur : position undefined tant qu'elle est inconnue ;
-// refusee = true si le joueur (ou le navigateur) a refusé la localisation
+// refusee = true tant que la localisation n'est pas autorisée (refusée, ou reportée à « Plus tard »
+// dans l'introduction). La demande système ne part que sur appui du joueur (autoriser).
 export function usePositionJoueur() {
   const [position, setPosition] = useState<Coords>();
   const [refusee, setRefusee] = useState(false);
   const [peutRedemander, setPeutRedemander] = useState(true);
-  // Incrémenté pour relancer la demande de localisation
-  const [tentative, setTentative] = useState(0);
+  // Relance la vérification ; demander = afficher la demande système plutôt que lire l'état
+  const [tentative, setTentative] = useState({ n: 0, demander: false });
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const { status, canAskAgain } = await Location.requestForegroundPermissionsAsync();
+      const { status, canAskAgain } = tentative.demander
+        ? await Location.requestForegroundPermissionsAsync()
+        : await Location.getForegroundPermissionsAsync();
       if (cancelled) return;
       setRefusee(status !== 'granted');
       setPeutRedemander(canAskAgain);
@@ -44,11 +47,11 @@ export function usePositionJoueur() {
     };
   }, [tentative]);
 
-  // Retour dans l'app (ex. depuis les réglages) : on retente si la localisation était refusée
+  // Retour dans l'app (ex. depuis les réglages) : on relit l'autorisation si elle manquait
   useEffect(() => {
     if (!refusee) return;
     const abonnement = AppState.addEventListener('change', (etat) => {
-      if (etat === 'active') setTentative((n) => n + 1);
+      if (etat === 'active') setTentative((t) => ({ n: t.n + 1, demander: false }));
     });
     return () => abonnement.remove();
   }, [refusee]);
@@ -56,7 +59,7 @@ export function usePositionJoueur() {
   // Redemande l'autorisation ; si le système ne peut plus la proposer, ouvre les réglages de l'app
   const autoriser = useCallback(() => {
     if (!peutRedemander && Platform.OS !== 'web') Linking.openSettings();
-    else setTentative((n) => n + 1);
+    else setTentative((t) => ({ n: t.n + 1, demander: true }));
   }, [peutRedemander]);
 
   return { position, refusee, autoriser };

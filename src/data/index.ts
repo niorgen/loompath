@@ -147,11 +147,6 @@ export function rechercherCarnet(carnet: Categorie[], requete: string) {
   );
 }
 
-// Données locales provisoires du joueur (en attendant un backend)
-export const journal = {
-  voyageur: 'Eldwine',
-};
-
 // Stats du journal, sur tout le carnet ou sur un seul parc :
 // score = nombre de prouesses validées, progression = part validée (0 à 1)
 export function calculerStats(prouesses: Prouesse[], parc?: string) {

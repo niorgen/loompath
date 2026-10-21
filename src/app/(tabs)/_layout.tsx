@@ -4,12 +4,13 @@ import { Tabs, type BottomTabBarProps } from 'expo-router/tabs';
 import { NavigationMenu, type Destination } from '@/components/NavigationMenu';
 import { colors } from '@/theme';
 
-// Destinations de la barre ↔ onglets de ce groupe (les autres arrivent avec leurs écrans)
-const ONGLETS: Partial<Record<Destination, { route: string; href: Href }>> = {
+// Destinations de la barre ↔ onglets de ce groupe
+const ONGLETS: Record<Destination, { route: string; href: Href }> = {
   journal: { route: 'index', href: '/' },
   prouesse: { route: 'prouesses', href: '/prouesses' },
   cartes: { route: 'cartes', href: '/cartes' },
   chroniques: { route: 'chroniques', href: '/chroniques' },
+  profil: { route: 'profil', href: '/profil' },
 };
 
 function TabBar({ state, navigation }: BottomTabBarProps) {
@@ -43,6 +44,7 @@ export default function TabsLayout() {
       <Tabs.Screen name="prouesses" />
       <Tabs.Screen name="cartes" />
       <Tabs.Screen name="chroniques" />
+      <Tabs.Screen name="profil" />
     </Tabs>
   );
 }
