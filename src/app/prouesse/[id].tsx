@@ -43,7 +43,8 @@ export default function ProuesseScreen() {
           return;
         }
       }
-      const options: ImagePicker.ImagePickerOptions = { mediaTypes: 'images', quality: 0.7 };
+      // quality 1 : pas de recompression de l'original par le sélecteur, la photo est réduite ensuite
+      const options: ImagePicker.ImagePickerOptions = { mediaTypes: 'images', quality: 1 };
       const resultat =
         sourcePhoto === 'appareil'
           ? await ImagePicker.launchCameraAsync(options)

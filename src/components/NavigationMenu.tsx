@@ -73,16 +73,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 12,
-    paddingVertical: 8,
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.borderNav,
     borderRadius: 22,
     boxShadow: shadows.nav,
   },
+  // Toute la hauteur de la capsule est cliquable, pas seulement l'icône et le libellé
   destination: {
     flex: 1,
+    alignSelf: 'stretch',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: 5,
   },
   iconPill: {

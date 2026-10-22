@@ -47,28 +47,47 @@ AsyncStorage.getItem(CLE_STOCKAGE)
     // Stockage illisible : on repart d'un carnet vierge
   });
 
-// Vignette légère (144 px) conservée avec la validation : la carte (WebView) ne peut pas
-// lire les fichiers locaux, et elle survit au nettoyage du cache photo.
-async function creerMiniature(photoUri: string) {
+// Plus grand côté des photos conservées : l'original d'un bon téléphone (50 Mpx) met
+// plusieurs secondes à décoder, à chaque affichage comme à chaque traitement.
+const COTE_MAX = 1600;
+
+// Photo réduite (fichier temporaire) et sa vignette légère (144 px), conservée avec la validation :
+// la carte (WebView) ne peut pas lire les fichiers locaux, et elle survit au nettoyage du cache photo.
+// L'original n'est décodé qu'une fois ; la vignette part de la photo réduite.
+async function preparerPhoto(photoTemporaire: string) {
   try {
-    const contexte = ImageManipulator.manipulate(photoUri);
-    contexte.resize({ width: 144 });
-    const image = await contexte.renderAsync();
-    const { base64 } = await image.saveAsync({ format: SaveFormat.JPEG, compress: 0.7, base64: true });
-    return base64 ? `data:image/jpeg;base64,${base64}` : undefined;
+    const original = await ImageManipulator.manipulate(photoTemporaire).renderAsync();
+    const contexte = ImageManipulator.manipulate(original);
+    if (Math.max(original.width, original.height) > COTE_MAX) {
+      contexte.resize(original.width >= original.height ? { width: COTE_MAX } : { height: COTE_MAX });
+    }
+    const reduite = await contexte.renderAsync();
+    const { uri } = await reduite.saveAsync({ format: SaveFormat.JPEG, compress: 0.8 });
+    const vignette = await ImageManipulator.manipulate(reduite).resize({ width: 144 }).renderAsync();
+    const { base64 } = await vignette.saveAsync({ format: SaveFormat.JPEG, compress: 0.7, base64: true });
+    return { uri, miniature: base64 ? `data:image/jpeg;base64,${base64}` : undefined };
   } catch {
-    return undefined;
+    return { uri: photoTemporaire, miniature: undefined };
   }
 }
 
+// Au-delà, la validation se fait sans position plutôt que de faire attendre le joueur
+const DELAI_POSITION_MS = 3000;
+
 // Position du joueur, pour placer sur la carte la photo d'une prouesse sans coordonnées.
-// Facultative : si la localisation est refusée ou indisponible, la validation se fait sans.
+// Facultative : si la localisation est refusée ou trop lente, la validation se fait sans.
+// La dernière position connue est immédiate ; un relevé GPS peut prendre plus de 10 s en intérieur.
 async function positionJoueur() {
   try {
-    const { status } = await Location.requestForegroundPermissionsAsync();
+    const { status } = await Location.getForegroundPermissionsAsync();
     if (status !== 'granted') return {};
-    const { coords } = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
-    return { latitude: coords.latitude, longitude: coords.longitude };
+    const position =
+      (await Location.getLastKnownPositionAsync({ maxAge: 5 * 60 * 1000 })) ??
+      (await Promise.race([
+        Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced }),
+        new Promise<null>((resolve) => setTimeout(() => resolve(null), DELAI_POSITION_MS)),
+      ]));
+    return position ? { latitude: position.coords.latitude, longitude: position.coords.longitude } : {};
   } catch {
     return {};
   }
@@ -83,9 +102,11 @@ export async function validerProuesse(prouesseId: string, photoTemporaire: strin
     existante?.latitude !== undefined && existante.longitude !== undefined
       ? { latitude: existante.latitude, longitude: existante.longitude }
       : undefined;
-  const [photoUri, miniature, position] = await Promise.all([
-    enregistrerPhoto(prouesseId, photoTemporaire),
-    creerMiniature(photoTemporaire),
+  const [{ photoUri, miniature }, position] = await Promise.all([
+    preparerPhoto(photoTemporaire).then(async ({ uri, miniature }) => ({
+      photoUri: await enregistrerPhoto(prouesseId, uri),
+      miniature,
+    })),
     positionConnue ?? (source && !estLocalisee(source) ? positionJoueur() : {}),
   ]);
   publier({
