@@ -9,6 +9,8 @@ export type PointProuesse = {
   obtenue: boolean;
   /** Remplace la couleur du point (ex. couleur du type sur la mini-carte du Journal) */
   couleur?: string;
+  /** Tracé SVG 24 × 24 du picto : le point devient une pastille portant ce picto */
+  picto?: string;
 };
 
 export type PointPhoto = {
@@ -28,8 +30,8 @@ export type DonneesCarte = {
   joueur?: { latitude: number; longitude: number };
 };
 
-// Messages renvoyés par la carte
-export type MessageCarte = { type: 'prouesse'; id: string };
+// Messages renvoyés par la carte : appui sur une prouesse, ou sur le fond de carte
+export type MessageCarte = { type: 'prouesse'; id: string } | { type: 'fond' };
 
 // assets/icons/pin-image.svg (badge des pins photo), tel qu'exporté depuis Figma
 const ICONE_IMAGE = `<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="image" clip-path="url(#clip0_0_126)"><path id="Vector" d="M8.75 6.24987L7.46417 4.96404C7.30789 4.80781 7.09597 4.72005 6.875 4.72005C6.65403 4.72005 6.44211 4.80781 6.28583 4.96404L2.5 8.74987M2.08333 1.25H7.91667C8.3769 1.25 8.75 1.6231 8.75 2.08333V7.91667C8.75 8.3769 8.3769 8.75 7.91667 8.75H2.08333C1.6231 8.75 1.25 8.3769 1.25 7.91667V2.08333C1.25 1.6231 1.6231 1.25 2.08333 1.25ZM4.58333 3.75C4.58333 4.21024 4.21024 4.58333 3.75 4.58333C3.28976 4.58333 2.91667 4.21024 2.91667 3.75C2.91667 3.28976 3.28976 2.91667 3.75 2.91667C4.21024 2.91667 4.58333 3.28976 4.58333 3.75Z" stroke="white" stroke-linecap="round"/></g><defs><clipPath id="clip0_0_126"><rect width="10" height="10" fill="white"/></clipPath></defs></svg>`;
@@ -114,6 +116,12 @@ export function construireHtmlCarte({ margeBas, apercu = false }: { margeBas: nu
   .leaflet-control-attribution a { color: ${colors.accentSecondary}; }
   .leaflet-div-icon, .marker-cluster { background: none; border: none; }
 
+  .pastille {
+    width: 28px; height: 28px; box-sizing: border-box; border-radius: 14px;
+    border: 2px solid ${colors.background}; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 10px rgba(2, 6, 23, 0.5);
+  }
+
   .pin { position: relative; width: 52px; height: 52px; }
   .vignette {
     position: absolute; top: 0; width: 48px; height: 48px; box-sizing: border-box;
@@ -193,6 +201,7 @@ ${FILTRE_TUILES}
   }).addTo(carte);
 
   var coucheJoueur = L.layerGroup().addTo(carte);
+  carte.on('click', function () { envoyer({ type: 'fond' }); });
   var cadree = false;
   var centreId = null;
 
@@ -208,6 +217,21 @@ ${FILTRE_TUILES}
     }
 
     donnees.points.forEach(function (p) {
+      if (p.picto) {
+        L.marker([p.latitude, p.longitude], {
+          title: p.titre,
+          icon: L.divIcon({
+            className: '',
+            iconSize: [28, 28],
+            html: '<div class="pastille" style="background:' + p.couleur + '">' +
+                  '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="${colors.background}" stroke-width="2.2" ' +
+                  'stroke-linecap="round" stroke-linejoin="round">' + p.picto + '</svg></div>',
+          }),
+        })
+          .on('click', function () { envoyer({ type: 'prouesse', id: p.id }); })
+          .addTo(couchePoints);
+        return;
+      }
       L.circleMarker([p.latitude, p.longitude], {
         radius: 6, weight: 2, color: '${colors.background}',
         fillColor: p.couleur || (p.obtenue ? '${colors.accent}' : '${colors.textSecondary}'), fillOpacity: 0.95,

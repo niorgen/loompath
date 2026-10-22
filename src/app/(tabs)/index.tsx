@@ -20,6 +20,8 @@ import { useProfil } from '@/state/profil';
 import { useCarnet, useProuesses } from '@/state/validations';
 import { colors } from '@/theme';
 
+const ouvrirProuesse = (id: string) => router.push(`/prouesse/${id}`);
+
 // Journal : deux variantes du Figma selon la localisation.
 // Sans position : stats, récemment obtenus, prouesses à faire.
 // Avec position : mini-carte des prouesses proches, récemment obtenus, catégories du land
@@ -97,7 +99,11 @@ export default function JournalScreen() {
         {position ? (
           <>
             {proches.length > 0 ? (
-              <MiniCarte joueur={position} prouesses={proches} onPress={() => router.navigate('/cartes')} />
+              <MiniCarte
+                joueur={position}
+                prouesses={proches}
+                onOuvrirProuesse={ouvrirProuesse}
+              />
             ) : null}
 
             {recemment}
