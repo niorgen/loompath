@@ -9,8 +9,9 @@ import { IndiceRow } from '@/components/IndiceRow';
 import { NAV_HEIGHT } from '@/components/NavigationMenu';
 import { ProgressionGlobale } from '@/components/ProgressionGlobale';
 import { ProgressionRow } from '@/components/ProgressionRow';
+import { ResultatsProuesses } from '@/components/ResultatsProuesses';
 import { SearchField } from '@/components/SearchField';
-import { construireCarnet, estResort, rechercherCarnet, type Categorie } from '@/data';
+import { construireCarnet, estResort, rechercherCarnet, rechercherProuesses, type Categorie } from '@/data';
 import { useCarnet, useProuesses } from '@/state/validations';
 import { colors, fonts } from '@/theme';
 
@@ -33,6 +34,8 @@ export default function DetailProuessesScreen() {
     [parc, land, prouesses, carnet],
   );
   const detail = categories.find((c) => c.id === id);
+  const [recherche, setRecherche] = useState('');
+  const trouvees = useMemo(() => rechercherProuesses(detail?.prouesses ?? [], recherche), [detail, recherche]);
 
   const retour = () => (router.canGoBack() ? router.back() : router.replace('/prouesses'));
 
@@ -67,11 +70,22 @@ export default function DetailProuessesScreen() {
   }
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={contenu} showsVerticalScrollIndicator={false}>
-      {entete}
+    <ScrollView
+      style={styles.screen}
+      contentContainerStyle={contenu}
+      keyboardDismissMode="on-drag"
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+    >
       {detail ? (
+        <SearchField value={recherche} onChangeText={setRecherche} placeholder="Rechercher une prouesse…" />
+      ) : null}
+      {entete}
+      {detail && !trouvees.length ? (
+        <Text style={styles.vide}>Aucune prouesse ne correspond à « {recherche.trim()} ».</Text>
+      ) : detail ? (
         <View style={styles.liste}>
-          {detail.prouesses.map((prouesse) => (
+          {trouvees.map((prouesse) => (
             <IndiceRow
               key={prouesse.id}
               titre={prouesse.titre}
@@ -103,6 +117,11 @@ function EcranParc({ parc, entete, contenu }: EcranParcProps) {
   );
   const lands = sousCategories.filter((c) => c.niveau === 'land');
   const types = sousCategories.filter((c) => c.niveau === 'type');
+  // En recherche, les prouesses trouvées dans les lands et catégories du parc sont listées directement
+  const trouvees = useMemo(
+    () => (recherche.trim() ? rechercherProuesses(parc.prouesses, recherche) : []),
+    [parc, recherche],
+  );
 
   return (
     <ScrollView
@@ -114,6 +133,8 @@ function EcranParc({ parc, entete, contenu }: EcranParcProps) {
     >
       <SearchField value={recherche} onChangeText={setRecherche} placeholder="Rechercher une attraction…" />
       {entete}
+
+      <ResultatsProuesses prouesses={trouvees} />
 
       {lands.length ? (
         <View style={styles.section}>
@@ -145,7 +166,7 @@ function EcranParc({ parc, entete, contenu }: EcranParcProps) {
 
       {!lands.length && !types.length ? (
         recherche.trim() ? (
-          <Text style={styles.vide}>Aucune catégorie ne correspond à « {recherche.trim()} ».</Text>
+          trouvees.length ? null : <Text style={styles.vide}>Aucun résultat pour « {recherche.trim()} ».</Text>
         ) : (
           // Parc sans land ni type (ex. hôtels) : liste directe de ses prouesses
           <View style={styles.liste}>

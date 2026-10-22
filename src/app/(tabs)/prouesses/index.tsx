@@ -6,17 +6,24 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GrilleCategories } from '@/components/GrilleCategories';
 import { HeaderTitle } from '@/components/HeaderTitle';
 import { NAV_HEIGHT } from '@/components/NavigationMenu';
+import { ResultatsProuesses } from '@/components/ResultatsProuesses';
 import { SearchField } from '@/components/SearchField';
-import { estResort, rechercherCarnet } from '@/data';
-import { useCarnet } from '@/state/validations';
+import { estResort, rechercherCarnet, rechercherProuesses } from '@/data';
+import { useCarnet, useProuesses } from '@/state/validations';
 import { colors, fonts } from '@/theme';
 
 export default function CarnetScreen() {
   const insets = useSafeAreaInsets();
   const [recherche, setRecherche] = useState('');
   const carnet = useCarnet();
+  const prouesses = useProuesses();
   const resultats = useMemo(() => rechercherCarnet(carnet, recherche), [carnet, recherche]);
   const enRecherche = !!recherche.trim();
+  // En recherche, les prouesses trouvées dans toutes les catégories sont listées directement
+  const trouvees = useMemo(
+    () => (enRecherche ? rechercherProuesses(prouesses, recherche) : []),
+    [enRecherche, prouesses, recherche],
+  );
 
   // Les lands se consultent depuis la page de leur parc ; ils ne remontent ici qu'en recherche
   const sections = [
@@ -37,6 +44,8 @@ export default function CarnetScreen() {
       <HeaderTitle titre="Prouesses" />
       <SearchField value={recherche} onChangeText={setRecherche} placeholder="Rechercher une attraction…" />
 
+      <ResultatsProuesses prouesses={trouvees} />
+
       {sections.map((section) => (
         <View key={section.titre} style={styles.section}>
           <Text style={styles.titreSection} accessibilityRole="header">
@@ -46,8 +55,8 @@ export default function CarnetScreen() {
         </View>
       ))}
 
-      {!sections.length ? (
-        <Text style={styles.vide}>Aucune catégorie ne correspond à « {recherche.trim()} ».</Text>
+      {!sections.length && !trouvees.length ? (
+        <Text style={styles.vide}>Aucun résultat pour « {recherche.trim()} ».</Text>
       ) : null}
     </ScrollView>
   );

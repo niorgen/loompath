@@ -149,6 +149,13 @@ export function rechercherCarnet(carnet: Categorie[], requete: string) {
 
 export const POINTS_PAR_PROUESSE = 10;
 
+// Recherche dans les prouesses d'une catégorie : titre, indice ou code, sans accents ni casse
+export function rechercherProuesses(prouesses: Prouesse[], requete: string) {
+  const q = normaliser(requete);
+  if (!q) return prouesses;
+  return prouesses.filter((p) => [p.titre, p.sousTitre, p.code ?? ''].some((champ) => normaliser(champ).includes(q)));
+}
+
 // Stats du journal, sur tout le carnet ou sur un seul parc :
 // score = points des prouesses validées, progression = part validée (0 à 1)
 export function calculerStats(prouesses: Prouesse[], parc?: string) {
