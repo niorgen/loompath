@@ -50,7 +50,22 @@ export const TRACES = {
   cadenas: "<rect x='4' y='11' width='16' height='10' rx='2'/><path d='M8 11V7a4 4 0 0 1 8 0v4'/>",
   retour: "<path d='m15 18-6-6 6-6'/>",
   suivant: "<path d='m9 18 6-6-6-6'/>",
+  fleche: "<path d='M5 12h14'/><path d='m13 6 6 6-6 6'/>",
+  fermer: "<path d='M18 6 6 18'/><path d='m6 6 12 12'/>",
+  carte: "<path d='M9 3 3 6v15l6-3 6 3 6-3V3l-6 3z'/><path d='M9 3v15'/><path d='M15 6v15'/>",
+  pellicule: "<rect x='3' y='3' width='7' height='7' rx='1.5'/><rect x='14' y='3' width='7' height='7' rx='1.5'/><rect x='3' y='14' width='7' height='7' rx='1.5'/><rect x='14' y='14' width='7' height='7' rx='1.5'/>",
+  image: "<rect x='3' y='3' width='18' height='18' rx='3'/><circle cx='9' cy='9' r='2'/><path d='m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21'/>",
+  carnet: "<rect x='4' y='2' width='16' height='20' rx='2'/><path d='M8 7h8'/><path d='M8 11h8'/><path d='M8 15h5'/>",
+  groupe: "<circle cx='12' cy='7' r='3'/><circle cx='5' cy='9' r='2.5'/><circle cx='19' cy='9' r='2.5'/><path d='M7 20a5 5 0 0 1 10 0'/><path d='M1.5 19a4 4 0 0 1 5.5-3.7'/><path d='M22.5 19a4 4 0 0 0-5.5-3.7'/>",
 } as const;
+
+// Étincelle pleine à quatre branches des illustrations
+const ETINCELLE = "<path d='M12 1L14.6 9.4L23 12L14.6 14.6L12 23L9.4 14.6L1 12L9.4 9.4Z'/>";
+
+export function Etincelle({ couleur, taille }: { couleur: string; taille: number }) {
+  const xml = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="${couleur}">${ETINCELLE}</svg>`;
+  return <SvgXml xml={xml} width={taille} height={taille} />;
+}
 
 type TraceProps = {
   /** Tracé SVG (planche ou TRACES) */

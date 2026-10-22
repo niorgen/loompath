@@ -25,6 +25,23 @@ export const colors = {
   accentSecondary: '#c9b5ff',
 } as const;
 
+// Teintes propres aux illustrations de l'introduction et de la validation (artifact « Design »)
+export const illustration = {
+  papier: '#F4F1FF',
+  encre: '#141A3A',
+  encreDouce: '#4A5280',
+  nuit: '#1A2250',
+  carte: '#121937',
+  bord: '#2A3466',
+  bordFort: '#3A4580',
+  piste: '#232B5E',
+  pastille: '#1E2656',
+  jauge: '#252E5C',
+  texteDoux: '#C4C8E6',
+  texteListe: '#DCDDF2',
+  inactif: '#8F96C4',
+} as const;
+
 export const radius = {
   sm: 8,
   md: 12,

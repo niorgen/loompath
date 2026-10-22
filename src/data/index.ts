@@ -147,12 +147,17 @@ export function rechercherCarnet(carnet: Categorie[], requete: string) {
   );
 }
 
+export const POINTS_PAR_PROUESSE = 10;
+
 // Stats du journal, sur tout le carnet ou sur un seul parc :
-// score = nombre de prouesses validées, progression = part validée (0 à 1)
+// score = points des prouesses validées, progression = part validée (0 à 1)
 export function calculerStats(prouesses: Prouesse[], parc?: string) {
   const perimetre = parc ? prouesses.filter((p) => p.parc === parc) : prouesses;
-  const score = perimetre.filter((p) => p.obtenue).length;
-  return { score, progression: perimetre.length ? score / perimetre.length : 0 };
+  const validees = perimetre.filter((p) => p.obtenue).length;
+  return {
+    score: validees * POINTS_PAR_PROUESSE,
+    progression: perimetre.length ? validees / perimetre.length : 0,
+  };
 }
 
 // Chroniques : prouesses validées regroupées en étapes de la frise, de la plus récente à la plus ancienne.

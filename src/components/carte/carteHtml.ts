@@ -20,6 +20,8 @@ export type PointPhoto = {
 export type DonneesCarte = {
   points: PointProuesse[];
   photos: PointPhoto[];
+  /** Prouesse sur laquelle centrer la carte (ex. « Voir sur la carte » après une validation) */
+  centre?: { id: string; latitude: number; longitude: number };
 };
 
 // Messages renvoyés par la carte
@@ -179,6 +181,7 @@ ${FILTRE_TUILES}
   }).addTo(carte);
 
   var cadree = false;
+  var centreId = null;
 
   window.majDonnees = function (donnees) {
     couchePoints.clearLayers();
@@ -208,6 +211,13 @@ ${FILTRE_TUILES}
         .on('click', function () { envoyer({ type: 'prouesse', id: p.id }); })
         .addTo(couchePhotos);
     });
+
+    // Centrage demandé sur une prouesse : une fois par prouesse, il remplace le cadrage initial
+    if (donnees.centre && donnees.centre.id !== centreId) {
+      centreId = donnees.centre.id;
+      cadree = true;
+      carte.setView([donnees.centre.latitude, donnees.centre.longitude], 18);
+    }
 
     // Cadrage initial sur le parc, une seule fois pour ne pas perdre la position du joueur
     if (!cadree && donnees.points.length) {

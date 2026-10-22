@@ -1,33 +1,33 @@
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
 import { useEffect, useState, type ReactNode } from 'react';
-import {
-  BackHandler,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  useWindowDimensions,
-  View,
-} from 'react-native';
+import { BackHandler, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Avatar } from '@/components/Avatar';
-import { BoutonAction } from '@/components/BoutonAction';
+import { BoutonPrincipal } from '@/components/BoutonPrincipal';
 import { ChampNom } from '@/components/ChampNom';
-import { Picto, Trace, TRACES } from '@/components/Picto';
+import {
+  SceneBienvenue,
+  SceneChoisir,
+  SceneLocalisation,
+  ScenePhotographier,
+  ScenePhotos,
+  SceneSouvenirs,
+} from '@/components/onboarding/Scenes';
+import { Trace, TRACES } from '@/components/Picto';
 import { PICTOS } from '@/data/pictos';
 import { definirNom, nomValide, terminerIntroduction, useProfil } from '@/state/profil';
-import { colors, fonts, normalLineHeight, radius } from '@/theme';
+import { colors, fonts, illustration, normalLineHeight } from '@/theme';
 
-// Introduction du premier lancement (maquette src/data/loompath-onboarding.html) :
-// bienvenue, principe, nom du joueur, puis les deux autorisations.
-const ETAPES = 5;
-const ETAPE_NOM = 2;
+// Introduction du premier lancement (artifact « Design ») : bienvenue, comment ça marche
+// en trois écrans, nom du joueur, puis les deux autorisations.
+const ETAPES = 7;
+const ETAPE_NOM = 4;
+const ETAPE_LOCALISATION = 5;
 
-const VERT_PHOTO = PICTOS['Point photo'].couleur;
+const JAUNE = PICTOS.Secret.couleur;
+const VERT = PICTOS['Point photo'].couleur;
 
 export default function OnboardingScreen() {
   const insets = useSafeAreaInsets();
@@ -64,63 +64,130 @@ export default function OnboardingScreen() {
     suivante();
   };
 
-  const autoriserAppareilPhoto = async () => {
+  // Appareil photo puis pellicule : les deux servent à valider une prouesse
+  const autoriserPhotos = async () => {
     try {
       await ImagePicker.requestCameraPermissionsAsync();
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
     } catch {
-      // Appareil photo indisponible : il sera redemandé à la première validation
+      // Indisponible : redemandé à la première validation
     }
     terminerIntroduction();
   };
 
-  // « Passer » : les écrans de présentation mènent au nom (seule information obligatoire),
-  // la localisation à l'appareil photo
-  const passer = etape < ETAPE_NOM ? () => setEtape(ETAPE_NOM) : etape === 3 ? suivante : undefined;
+  // En haut à droite : les écrans de présentation mènent au nom (seule information obligatoire),
+  // la localisation aux photos, et les photos peuvent attendre
+  const raccourci =
+    etape < ETAPE_NOM
+      ? { libelle: 'Passer', onPress: () => setEtape(ETAPE_NOM) }
+      : etape === ETAPE_LOCALISATION
+        ? { libelle: 'Passer', onPress: suivante }
+        : etape === ETAPES - 1
+          ? { libelle: 'Plus tard', onPress: terminerIntroduction }
+          : undefined;
 
   const ecrans: { contenu: ReactNode; actions: ReactNode }[] = [
     {
       contenu: <Bienvenue />,
-      actions: <BoutonAction libelle="Commencer" onPress={suivante} fleche />,
+      actions: <BoutonPrincipal libelle="Commencer" onPress={suivante} fleche />,
     },
     {
-      contenu: <Principe />,
-      actions: <BoutonAction libelle="Continuer" onPress={suivante} fleche />,
+      contenu: (
+        <Presentation
+          scene={<SceneChoisir />}
+          surtitre="Comment ça marche · 1/3"
+          couleurSurtitre={JAUNE}
+          titre="Choisissez une prouesse près de vous"
+          texte="Une prouesse ? Un petit défi à relever ! Filer dans une attraction, saluer un personnage, dénicher le détail que tout le monde rate… Suivez l'indice, on vous met sur la piste."
+        />
+      ),
+      actions: <BoutonPrincipal libelle="Suivant" onPress={suivante} fleche />,
+    },
+    {
+      contenu: (
+        <Presentation
+          scene={<ScenePhotographier />}
+          surtitre="Comment ça marche · 2/3"
+          couleurSurtitre={VERT}
+          titre="Prenez la photo sur place"
+          texte="Vous y êtes ? Sortez votre téléphone et prenez la photo ! Seul, en bande ou juste le décor : c'est elle qui valide la prouesse."
+        />
+      ),
+      actions: <BoutonPrincipal libelle="Suivant" onPress={suivante} fleche />,
+    },
+    {
+      contenu: (
+        <Presentation
+          scene={<SceneSouvenirs />}
+          surtitre="Comment ça marche · 3/3"
+          titre="Gardez une trace de vos aventures"
+          texte="Chaque photo se range sur la carte, pile là où vous l'avez prise, et dans vos Chroniques, votre carnet de visite jour après jour."
+        />
+      ),
+      actions: <BoutonPrincipal libelle="C'est parti" onPress={suivante} fleche />,
     },
     {
       contenu: <EtapeNom nom={nom} onChange={setNom} onValider={validerNom} />,
       actions: nomValide(nom) ? (
-        <BoutonAction libelle="C'est moi" onPress={validerNom} fleche />
+        <BoutonPrincipal libelle="C'est moi" onPress={validerNom} fleche />
       ) : (
-        <BoutonAction libelle="Entrez au moins 2 caractères" onPress={validerNom} disabled />
+        <BoutonPrincipal libelle="Entrez au moins 2 caractères" onPress={validerNom} disabled />
       ),
     },
     {
-      contenu: <EtapeLocalisation />,
+      contenu: (
+        <Presentation
+          scene={<SceneLocalisation />}
+          surtitre="Autorisation 1 sur 2"
+          titre="Trouvez les prouesses autour de vous"
+          texte="Loompath utilise votre position seulement quand l'app est ouverte."
+        >
+          <Avantages
+            couleur={colors.accentSecondary}
+            elements={[
+              'Voir les prouesses les plus proches en premier',
+              'Connaître la distance et le temps à pied',
+            ]}
+          />
+        </Presentation>
+      ),
       actions: (
         <>
           <NoteProfil />
-          <BoutonAction libelle="Autoriser la localisation" onPress={autoriserLocalisation} />
-          <PlusTard onPress={suivante} />
+          <BoutonPrincipal libelle="Autoriser la localisation" onPress={autoriserLocalisation} />
         </>
       ),
     },
     {
-      contenu: <EtapeAppareilPhoto />,
+      contenu: (
+        <Presentation
+          scene={<ScenePhotos />}
+          surtitre="Autorisation 2 sur 2"
+          couleurSurtitre={VERT}
+          titre="Immortalisez chaque découverte"
+          texte="Prenez la photo sur place ou choisissez-la dans votre pellicule : elle valide la prouesse."
+        >
+          <Avantages
+            couleur={VERT}
+            elements={[
+              'Selfie, photo du décor ou de groupe : à vous de choisir',
+              'Importez une photo déjà prise depuis votre pellicule',
+              'Vos photos restent privées, sauf si vous les partagez',
+            ]}
+          />
+        </Presentation>
+      ),
       actions: (
         <>
           <NoteProfil />
-          <BoutonAction libelle="Autoriser l'appareil photo" onPress={autoriserAppareilPhoto} />
-          <PlusTard onPress={terminerIntroduction} />
+          <BoutonPrincipal libelle="Autoriser l'accès aux photos" onPress={autoriserPhotos} />
         </>
       ),
     },
   ];
 
   return (
-    <KeyboardAvoidingView
-      style={styles.screen}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
+    <KeyboardAvoidingView style={styles.screen} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <View style={[styles.cadre, { paddingTop: insets.top + 12, paddingBottom: insets.bottom + 24 }]}>
         <View style={styles.barre}>
           {etape > 0 ? (
@@ -136,14 +203,14 @@ export default function OnboardingScreen() {
             <View style={styles.caseBarre} />
           )}
           <Points etape={etape} />
-          {passer ? (
+          {raccourci ? (
             <Pressable
-              onPress={passer}
+              onPress={raccourci.onPress}
               accessibilityRole="button"
               hitSlop={8}
               style={({ pressed }) => [styles.caseBarre, pressed && { opacity: 0.7 }]}
             >
-              <Text style={styles.passer}>Passer</Text>
+              <Text style={styles.raccourci}>{raccourci.libelle}</Text>
             </Pressable>
           ) : (
             <View style={styles.caseBarre} />
@@ -188,75 +255,33 @@ function Entete({
   texte,
   grand,
 }: {
-  surtitre?: string;
+  surtitre: string;
   couleurSurtitre?: string;
   titre: string;
   texte: string;
   grand?: boolean;
 }) {
   return (
-    <View style={styles.entete}>
-      {surtitre ? <Text style={[styles.surtitre, { color: couleurSurtitre }]}>{surtitre.toUpperCase()}</Text> : null}
+    <View style={[styles.entete, grand && styles.enteteGrand]}>
+      <Text style={[styles.surtitre, { color: couleurSurtitre }]}>{surtitre.toUpperCase()}</Text>
       <Text style={[styles.titre, grand && styles.titreGrand]} accessibilityRole="header">
         {titre}
       </Text>
-      <Text style={[styles.texte, grand && styles.texteGrand]}>{texte}</Text>
+      <Text style={styles.texte}>{texte}</Text>
     </View>
   );
 }
 
-// Tuile carrée arrondie portant une icône
-function Tuile({ taille, children, style }: { taille: number; children: ReactNode; style?: object }) {
-  return (
-    <View style={[styles.tuile, { width: taille, height: taille, borderRadius: Math.round(taille * 0.28) }, style]}>
-      {children}
-    </View>
-  );
-}
-
-// Écran 1 : pictos des types de prouesses éparpillés au-dessus du message d'accueil
-const NUAGE: { nom: string; x: number; y: number; taille: number }[] = [
-  { nom: 'Secret', x: 28, y: 10, taille: 64 },
-  { nom: 'Point photo', x: 118, y: 40, taille: 76 },
-  { nom: 'Mickeys cachés', x: 222, y: 6, taille: 60 },
-  { nom: 'Attraction', x: 40, y: 104, taille: 72 },
-  { nom: 'Personnages', x: 250, y: 92, taille: 72 },
-  { nom: 'Chasse au trésor', x: 130, y: 140, taille: 64 },
-  { nom: 'Spectacles', x: 226, y: 186, taille: 56 },
-];
-
-const NUAGE_LARGEUR = 326;
-const NUAGE_HAUTEUR = 270;
-
+// Écran 1 : polaroïds au-dessus du message d'accueil, calé en bas
 function Bienvenue() {
-  // Le nuage est dessiné pour 326 px : réduit sur les écrans plus étroits (marges de 24 px)
-  const { width } = useWindowDimensions();
-  const echelle = Math.min(1, (width - 48) / NUAGE_LARGEUR);
   return (
     <View style={styles.bienvenue}>
-      <View style={{ height: NUAGE_HAUTEUR * echelle }}>
-        <View
-          // La mise à l'échelle part du centre : on remonte le nuage pour qu'il reste collé en haut
-          style={[styles.nuage, { transform: [{ translateY: (NUAGE_HAUTEUR * (echelle - 1)) / 2 }, { scale: echelle }] }]}
-          accessibilityElementsHidden
-          importantForAccessibility="no-hide-descendants"
-        >
-          <View style={styles.photoSouvenir}>
-            <Picto nom="Point photo" couleur={colors.textSecondary} taille={20} />
-            <Text style={styles.libellePhotoSouvenir}>Photo souvenir</Text>
-          </View>
-          {NUAGE.map(({ nom, x, y, taille }) => (
-            <Tuile key={nom} taille={taille} style={{ position: 'absolute', left: x, top: y }}>
-              <Picto nom={nom} taille={Math.round(taille * 0.41)} />
-            </Tuile>
-          ))}
-        </View>
-      </View>
+      <SceneBienvenue />
       <View style={styles.accueil}>
         <Entete
           surtitre="Bienvenue sur Loompath"
-          titre="Le parc cache des secrets. À vous de les trouver."
-          texte="Détails de décor, Mickeys cachés, points photo : chaque découverte devient un souvenir dans votre carnet."
+          titre="Le parc a des secrets. Partez les trouver."
+          texte="Loompath vous guide dans le parc pour relever des prouesses et garder un souvenir de chacune."
           grand
         />
       </View>
@@ -264,49 +289,29 @@ function Bienvenue() {
   );
 }
 
-// Écran 2 : les trois gestes, reliés par un trait
-const GESTES = [
-  {
-    icone: <Trace trace={TRACES.ampoule} couleur={PICTOS.Secret.couleur} taille={24} />,
-    titre: 'Repérez',
-    texte: "Choisissez une prouesse près de vous et suivez son indice jusqu'au bon endroit.",
-  },
-  {
-    icone: <Picto nom="Point photo" taille={24} />,
-    titre: 'Photographiez',
-    texte: "Prenez la photo sur place : c'est elle qui valide la prouesse.",
-  },
-  {
-    icone: <Trace trace={TRACES.etoile} couleur={colors.accentSecondary} taille={24} />,
-    titre: 'Collectionnez',
-    texte: 'Gagnez des points et retrouvez chaque souvenir dans vos Chroniques.',
-  },
-];
-
-function Principe() {
+// Écrans 2 à 4, 6 et 7 : illustration, en-tête, puis éventuellement la liste des avantages
+function Presentation({
+  scene,
+  children,
+  ...entete
+}: {
+  scene: ReactNode;
+  surtitre: string;
+  couleurSurtitre?: string;
+  titre: string;
+  texte: string;
+  children?: ReactNode;
+}) {
   return (
-    <View style={styles.principe}>
-      <Entete titre="Une prouesse, trois gestes" texte="Pas besoin de tout connaître du parc : l'app vous guide." />
-      <View>
-        {GESTES.map((geste, i) => (
-          <View key={geste.titre} style={styles.geste}>
-            <View style={styles.rail}>
-              <Tuile taille={52}>{geste.icone}</Tuile>
-              {i < GESTES.length - 1 ? <View style={styles.trait} /> : null}
-            </View>
-            <View style={styles.texteGeste}>
-              <Text style={styles.numeroGeste}>Étape {i + 1}</Text>
-              <Text style={styles.titreGeste}>{geste.titre}</Text>
-              <Text style={styles.texte}>{geste.texte}</Text>
-            </View>
-          </View>
-        ))}
-      </View>
+    <View style={styles.presentation}>
+      <View style={styles.scene}>{scene}</View>
+      <Entete {...entete} />
+      {children}
     </View>
   );
 }
 
-// Écran 3 : nom du joueur, avec aperçu de l'accueil du Journal
+// Écran 5 : nom du joueur, avec aperçu de l'accueil du Journal
 function EtapeNom({ nom, onChange, onValider }: { nom: string; onChange: (nom: string) => void; onValider: () => void }) {
   const affiche = nom.trim() ? nom.trim().toUpperCase() : 'VOTRE NOM';
   return (
@@ -314,26 +319,15 @@ function EtapeNom({ nom, onChange, onValider }: { nom: string; onChange: (nom: s
       <Entete
         surtitre="Votre profil"
         titre="Comment doit-on vous appeler ?"
-        texte="Ce nom signe votre journal de voyage et vos souvenirs."
+        texte="Il signe votre journal et tous vos souvenirs."
       />
       <Avatar nom={nom} />
       <ChampNom valeur={nom} onChange={onChange} onValider={onValider} />
       <View style={styles.apercu} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
         <Text style={styles.libelleApercu}>Aperçu</Text>
         <Text style={styles.surtitre}>BONJOUR, {affiche}</Text>
-        <Text style={styles.titreApercu}>Journal</Text>
+        <Text style={styles.titreApercu}>Journal de voyage</Text>
       </View>
-    </View>
-  );
-}
-
-// Cercles concentriques autour de l'icône d'une autorisation
-function Halo({ children }: { children: ReactNode }) {
-  return (
-    <View style={styles.halo} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-      <View style={[styles.cercle, styles.cercleExterieur]} />
-      <View style={[styles.cercle, styles.cercleInterieur]} />
-      {children}
     </View>
   );
 }
@@ -353,93 +347,12 @@ function Avantages({ elements, couleur }: { elements: string[]; couleur: string 
   );
 }
 
-// Écran 4 : localisation
-function EtapeLocalisation() {
-  return (
-    <View style={styles.autorisation}>
-      <Halo>
-        <Tuile taille={104} style={styles.tuileHalo}>
-          <Trace trace={TRACES.repere} couleur={colors.accentSecondary} taille={48} epaisseur={1.6} />
-        </Tuile>
-        <View style={[styles.etiquette, styles.etiquetteHaut]}>
-          <View style={styles.pastilleEtiquette}>
-            <Picto nom="Secret" taille={16} />
-          </View>
-          <Text style={styles.texteEtiquette}>Secret à 120 m</Text>
-        </View>
-        <View style={[styles.etiquette, styles.etiquetteBas]}>
-          <Picto nom="Point photo" taille={14} />
-          <Text style={styles.texteEtiquetteDiscret}>250 m</Text>
-        </View>
-      </Halo>
-      <Entete
-        surtitre="Autorisation 1 sur 2"
-        titre="Trouvez les prouesses autour de vous"
-        texte="Loompath utilise votre position seulement quand l'app est ouverte."
-      />
-      <Avantages
-        couleur={colors.accentSecondary}
-        elements={[
-          'Voir les prouesses les plus proches en premier',
-          'Connaître la distance jusqu’à chaque prouesse',
-        ]}
-      />
-    </View>
-  );
-}
-
-// Écran 5 : appareil photo
-function EtapeAppareilPhoto() {
-  return (
-    <View style={styles.autorisation}>
-      <Halo>
-        <Tuile taille={104} style={styles.tuileHalo}>
-          <Picto nom="Point photo" taille={48} />
-        </Tuile>
-        <View style={styles.photoPenchee}>
-          <Picto nom="Point photo" couleur={colors.textSecondary} taille={20} />
-        </View>
-        <View style={[styles.etiquette, styles.etiquetteBas]}>
-          <Trace trace={TRACES.coche} couleur={VERT_PHOTO} taille={14} epaisseur={2.4} />
-          <Text style={styles.texteEtiquette}>Prouesse validée</Text>
-        </View>
-      </Halo>
-      <Entete
-        surtitre="Autorisation 2 sur 2"
-        couleurSurtitre={VERT_PHOTO}
-        titre="Votre photo valide la prouesse"
-        texte="Chaque photo prise sur place devient un souvenir dans vos Chroniques."
-      />
-      <Avantages
-        couleur={VERT_PHOTO}
-        elements={[
-          'Valider une prouesse en un geste',
-          'Garder un carnet photo de chaque visite',
-          'Vos photos restent privées, sauf si vous les partagez',
-        ]}
-      />
-    </View>
-  );
-}
-
 function NoteProfil() {
   return (
     <View style={styles.note}>
       <Trace trace={TRACES.cadenas} couleur={colors.textSecondary} taille={14} epaisseur={2} />
       <Text style={styles.texteNote}>Modifiable à tout moment dans Profil</Text>
     </View>
-  );
-}
-
-function PlusTard({ onPress }: { onPress: () => void }) {
-  return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="button"
-      style={({ pressed }) => [styles.plusTard, pressed && { opacity: 0.7 }]}
-    >
-      <Text style={styles.passer}>Plus tard</Text>
-    </Pressable>
   );
 }
 
@@ -469,7 +382,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  passer: {
+  raccourci: {
     fontFamily: fonts.interBold,
     fontSize: 14,
     lineHeight: normalLineHeight(14),
@@ -477,16 +390,16 @@ const styles = StyleSheet.create({
   },
   points: {
     flexDirection: 'row',
-    gap: 6,
+    gap: 5,
   },
   point: {
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: colors.borderSubtle,
+    backgroundColor: illustration.bord,
   },
   pointCourant: {
-    width: 22,
+    width: 20,
   },
   pointAtteint: {
     backgroundColor: colors.accentSecondary,
@@ -496,14 +409,16 @@ const styles = StyleSheet.create({
   },
   contenu: {
     flexGrow: 1,
-    paddingTop: 28,
-    paddingBottom: 24,
+    paddingBottom: 20,
   },
   actions: {
-    gap: 8,
+    gap: 14,
   },
   entete: {
     gap: 10,
+  },
+  enteteGrand: {
+    gap: 14,
   },
   surtitre: {
     fontFamily: fonts.interBold,
@@ -514,8 +429,8 @@ const styles = StyleSheet.create({
   },
   titre: {
     fontFamily: fonts.loraBold,
-    fontSize: 30,
-    lineHeight: 30 * 1.15,
+    fontSize: 28,
+    lineHeight: 28 * 1.15,
     color: colors.textPrimary,
   },
   titreGrand: {
@@ -524,104 +439,42 @@ const styles = StyleSheet.create({
   },
   texte: {
     fontFamily: fonts.interRegular,
-    fontSize: 15,
-    lineHeight: 15 * 1.5,
-    color: colors.textSecondary,
-  },
-  texteGrand: {
     fontSize: 16,
     lineHeight: 16 * 1.55,
-  },
-  tuile: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.surfaceRow,
-    borderWidth: 1,
-    borderColor: colors.borderSubtle,
+    color: illustration.texteDoux,
   },
   // Écran 1
   bienvenue: {
     flex: 1,
-    gap: 24,
-  },
-  nuage: {
-    width: NUAGE_LARGEUR,
-    height: NUAGE_HAUTEUR,
-    alignSelf: 'center',
-  },
-  photoSouvenir: {
-    position: 'absolute',
-    left: 30,
-    top: 196,
-    width: 150,
-    height: 60,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    paddingHorizontal: 14,
-    backgroundColor: colors.surfaceRow,
-    borderWidth: 1.5,
-    borderStyle: 'dashed',
-    borderColor: colors.border,
-    borderRadius: 16,
-  },
-  libellePhotoSouvenir: {
-    fontFamily: fonts.interRegular,
-    fontSize: 12,
-    lineHeight: normalLineHeight(12),
-    color: colors.textSecondary,
+    paddingTop: 8,
   },
   accueil: {
     flex: 1,
     justifyContent: 'flex-end',
+    paddingTop: 24,
+    paddingBottom: 8,
   },
-  // Écran 2
-  principe: {
-    gap: 32,
+  // Écrans de présentation et d'autorisation
+  presentation: {
+    gap: 20,
   },
-  geste: {
-    flexDirection: 'row',
-    gap: 16,
+  scene: {
+    marginTop: 18,
+    marginBottom: 2,
   },
-  rail: {
-    alignItems: 'center',
-  },
-  trait: {
-    flex: 1,
-    width: 2,
-    marginVertical: 6,
-    backgroundColor: colors.borderSubtle,
-  },
-  texteGeste: {
-    flex: 1,
-    gap: 6,
-    paddingTop: 4,
-    paddingBottom: 26,
-  },
-  numeroGeste: {
-    fontFamily: fonts.interBold,
-    fontSize: 12,
-    lineHeight: normalLineHeight(12),
-    color: colors.textSecondary,
-  },
-  titreGeste: {
-    fontFamily: fonts.loraBold,
-    fontSize: 20,
-    lineHeight: 26,
-    color: colors.textPrimary,
-  },
-  // Écran 3
+  // Écran 5
   etapeNom: {
     gap: 24,
+    paddingTop: 28,
   },
   apercu: {
     gap: 6,
     paddingVertical: 16,
     paddingHorizontal: 18,
-    backgroundColor: colors.surfaceRow,
+    backgroundColor: illustration.carte,
     borderWidth: 1,
     borderStyle: 'dashed',
-    borderColor: colors.borderSubtle,
+    borderColor: illustration.bord,
     borderRadius: 18,
   },
   libelleApercu: {
@@ -636,94 +489,7 @@ const styles = StyleSheet.create({
     lineHeight: 28,
     color: colors.textPrimary,
   },
-  // Écrans 4 et 5
-  autorisation: {
-    gap: 22,
-  },
-  halo: {
-    height: 230,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  cercle: {
-    position: 'absolute',
-    borderWidth: 1,
-  },
-  cercleExterieur: {
-    width: 220,
-    height: 220,
-    borderRadius: 110,
-    borderColor: colors.surfaceRaised,
-  },
-  cercleInterieur: {
-    width: 160,
-    height: 160,
-    borderRadius: 80,
-    borderColor: colors.borderSubtle,
-  },
-  tuileHalo: {
-    borderRadius: 32,
-  },
-  etiquette: {
-    position: 'absolute',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: colors.surfaceRaised,
-    borderWidth: 1,
-    borderColor: colors.borderSubtle,
-  },
-  etiquetteHaut: {
-    right: 18,
-    top: 26,
-    paddingVertical: 8,
-    paddingLeft: 8,
-    paddingRight: 12,
-    borderRadius: 14,
-  },
-  etiquetteBas: {
-    left: 22,
-    bottom: 28,
-    gap: 6,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    borderRadius: radius.pill,
-  },
-  pastilleEtiquette: {
-    width: 28,
-    height: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.surfacePlaceholder,
-    borderRadius: 9,
-  },
-  texteEtiquette: {
-    fontFamily: fonts.interBold,
-    fontSize: 12,
-    lineHeight: normalLineHeight(12),
-    color: colors.textPrimary,
-  },
-  texteEtiquetteDiscret: {
-    fontFamily: fonts.interRegular,
-    fontSize: 12,
-    lineHeight: normalLineHeight(12),
-    color: colors.textPrimaryAlt,
-  },
-  photoPenchee: {
-    position: 'absolute',
-    right: 22,
-    top: 22,
-    width: 74,
-    height: 92,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.surfaceRaised,
-    borderWidth: 1.5,
-    borderStyle: 'dashed',
-    borderColor: colors.border,
-    borderRadius: 14,
-    transform: [{ rotate: '6deg' }],
-  },
+  // Écrans 6 et 7
   avantages: {
     gap: 12,
   },
@@ -737,7 +503,7 @@ const styles = StyleSheet.create({
     height: 24,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.surfaceRaised,
+    backgroundColor: illustration.pastille,
     borderRadius: 12,
   },
   texteAvantage: {
@@ -745,24 +511,18 @@ const styles = StyleSheet.create({
     fontFamily: fonts.interRegular,
     fontSize: 15,
     lineHeight: 15 * 1.5,
-    color: colors.textPrimaryAlt,
+    color: illustration.texteListe,
   },
   note: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    marginBottom: 6,
   },
   texteNote: {
     fontFamily: fonts.interRegular,
     fontSize: 13,
     lineHeight: normalLineHeight(13),
     color: colors.textSecondary,
-  },
-  plusTard: {
-    height: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
 });

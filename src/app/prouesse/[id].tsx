@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Badge } from '@/components/Badge';
 import { BoutonAction } from '@/components/BoutonAction';
+import { choisirSourcePhoto } from '@/components/choisirSourcePhoto';
 import { confirmer } from '@/components/confirmer';
 import { HeaderTitle } from '@/components/HeaderTitle';
 import { TYPE_LABELS } from '@/data';
@@ -24,25 +25,41 @@ export default function ProuesseScreen() {
 
   const retour = () => (router.canGoBack() ? router.back() : router.replace('/prouesses'));
 
-  // La validation se fait en photographiant la prouesse
+  // La validation se fait avec une photo de la prouesse, prise sur place ou tirée de la pellicule
   const valider = async () => {
     if (!prouesse) return;
+    const sourcePhoto = await choisirSourcePhoto(prouesse.obtenue ? 'Modifier la photo' : 'Valider la prouesse');
+    if (!sourcePhoto) return;
+    const premiere = !prouesse.obtenue;
     setEnCours(true);
     try {
-      const permission = await ImagePicker.requestCameraPermissionsAsync();
-      if (!permission.granted) {
-        Alert.alert(
-          'Appareil photo requis',
-          'Autorisez l’accès à l’appareil photo pour valider vos prouesses.',
-        );
-        return;
+      if (sourcePhoto === 'appareil') {
+        const permission = await ImagePicker.requestCameraPermissionsAsync();
+        if (!permission.granted) {
+          Alert.alert(
+            'Appareil photo requis',
+            'Autorisez l’accès à l’appareil photo pour valider vos prouesses.',
+          );
+          return;
+        }
       }
-      const resultat = await ImagePicker.launchCameraAsync({ mediaTypes: 'images', quality: 0.7 });
+      const options: ImagePicker.ImagePickerOptions = { mediaTypes: 'images', quality: 0.7 };
+      const resultat =
+        sourcePhoto === 'appareil'
+          ? await ImagePicker.launchCameraAsync(options)
+          : await ImagePicker.launchImageLibraryAsync(options);
       if (!resultat.canceled) {
         await validerProuesse(prouesse.id, resultat.assets[0].uri);
+        // Célébration à la première validation seulement (une nouvelle photo ne rapporte rien)
+        if (premiere) router.push(`/validation/${prouesse.id}`);
       }
     } catch {
-      Alert.alert('Photo impossible', 'L’appareil photo n’est pas disponible sur cet appareil.');
+      Alert.alert(
+        'Photo impossible',
+        sourcePhoto === 'appareil'
+          ? 'L’appareil photo n’est pas disponible sur cet appareil.'
+          : 'La pellicule n’est pas accessible sur cet appareil.',
+      );
     } finally {
       setEnCours(false);
     }

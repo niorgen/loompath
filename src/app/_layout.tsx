@@ -33,6 +33,7 @@ export default function RootLayout() {
         <Stack.Protected guard={profil.introVue}>
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="prouesse/[id]" />
+          <Stack.Screen name="validation/[id]" options={{ presentation: 'fullScreenModal', animation: 'fade' }} />
         </Stack.Protected>
         <Stack.Protected guard={!profil.introVue}>
           <Stack.Screen name="onboarding" />

@@ -1,4 +1,4 @@
-import { router, useNavigation } from 'expo-router';
+import { router, useLocalSearchParams, useNavigation } from 'expo-router';
 import type { BottomTabNavigationProp } from 'expo-router/tabs';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { FlatList, StyleSheet, View } from 'react-native';
@@ -23,6 +23,13 @@ export default function CartesScreen() {
   const [vue, setVue] = useState<Vue>('plan');
   // Filtre : n'afficher que les prouesses (et catégories) où le joueur a des photos
   const [photosSeulement, setPhotosSeulement] = useState(false);
+  // « Voir sur la carte » après une validation : plan centré sur la prouesse
+  const { focus } = useLocalSearchParams<{ focus?: string }>();
+  const [focusVu, setFocusVu] = useState(focus);
+  if (focus !== focusVu) {
+    setFocusVu(focus);
+    if (focus) setVue('plan');
+  }
 
   // Un appui sur l'onglet Cartes dans la barre du bas ramène au plan
   const navigation = useNavigation<BottomTabNavigationProp<Record<string, undefined>>>();
@@ -39,7 +46,9 @@ export default function CartesScreen() {
       .filter((p) => p.obtenue)
       .filter(estLocalisee)
       .filter((p) => !photosSeulement || p.miniature);
+    const cible = focus ? localisees.find((p) => p.id === focus) : undefined;
     return {
+      centre: cible ? { id: cible.id, latitude: cible.latitude, longitude: cible.longitude } : undefined,
       points: localisees.map((p) => ({
         id: p.id,
         titre: p.titre,
@@ -53,7 +62,7 @@ export default function CartesScreen() {
           : [],
       ),
     };
-  }, [prouesses, photosSeulement]);
+  }, [prouesses, photosSeulement, focus]);
 
   const ouvrir = useCallback((message: MessageCarte) => {
     router.push(`/prouesse/${message.id}`);
