@@ -135,16 +135,16 @@ export default function ProuesseScreen() {
         accessibilityRole="button"
         accessibilityLabel="Retour"
         hitSlop={8}
-        style={({ pressed }) => [styles.bouton, styles.retour, { top: insets.top + 8 }, pressed && { opacity: 0.7 }]}
+        style={({ pressed }) => [styles.bouton, styles.retour, { top: insets.top + MARGE }, pressed && { opacity: 0.7 }]}
       >
         <Image source={require('../../../assets/icons/chevron-left-16.svg')} style={styles.chevron} contentFit="contain" />
       </Pressable>
 
-      {prouesse ? (
+      {/* Une fois la prouesse validée, la photo se change par le menu « ⋯ » (Modifier la photo) */}
+      {prouesse && !prouesse.obtenue ? (
         <View style={[styles.zoneBas, { paddingBottom: 16 + insets.bottom }]}>
           <BoutonAction
-            // Une prouesse validée peut être rephotographiée (la nouvelle photo remplace l'ancienne)
-            libelle={prouesse.obtenue ? 'Reprendre la photo' : 'Valider la prouesse'}
+            libelle="Valider la prouesse"
             onPress={valider}
             chargement={enCours}
             picto="Point photo"
@@ -169,12 +169,12 @@ export default function ProuesseScreen() {
             accessibilityLabel="Options de la photo"
             accessibilityState={{ expanded: menuOuvert }}
             hitSlop={8}
-            style={({ pressed }) => [styles.bouton, styles.options, { top: insets.top + 8 }, pressed && { opacity: 0.7 }]}
+            style={({ pressed }) => [styles.bouton, styles.options, { top: insets.top + MARGE }, pressed && { opacity: 0.7 }]}
           >
             <Image source={require('../../../assets/icons/more-16.svg')} style={styles.chevron} contentFit="contain" />
           </Pressable>
           {menuOuvert ? (
-            <View style={[styles.menu, { top: insets.top + 8 + 34 + 8 }]} accessibilityRole="menu">
+            <View style={[styles.menu, { top: insets.top + MARGE + 34 + 8 }]} accessibilityRole="menu">
               <Pressable
                 onPress={modifierPhoto}
                 accessibilityRole="menuitem"
@@ -197,6 +197,9 @@ export default function ProuesseScreen() {
     </View>
   );
 }
+
+// Boutons flottants sur la photo : même marge en haut et sur les côtés
+const MARGE = 16;
 
 const styles = StyleSheet.create({
   screen: {
@@ -234,14 +237,14 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
   },
   retour: {
-    left: 16,
+    left: MARGE,
   },
   options: {
-    right: 16,
+    right: MARGE,
   },
   menu: {
     position: 'absolute',
-    right: 16,
+    right: MARGE,
     minWidth: 180,
     overflow: 'hidden',
     backgroundColor: colors.surface,
