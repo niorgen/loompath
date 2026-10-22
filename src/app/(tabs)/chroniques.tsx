@@ -4,12 +4,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { BarreOutils } from '@/components/BarreOutils';
 import { CarteSouvenir } from '@/components/CarteSouvenir';
-import { Chip } from '@/components/Chip';
 import { HeaderTitle } from '@/components/HeaderTitle';
 import { NAV_HEIGHT } from '@/components/NavigationMenu';
 import { ResumeMois } from '@/components/ResumeMois';
+import { SegmentedControl } from '@/components/SegmentedControl';
 import {
   compterSouvenirs,
   compterVisites,
@@ -69,9 +68,6 @@ export default function ChroniquesScreen() {
   const insets = useSafeAreaInsets();
   const prouesses = useProuesses();
   const [vue, setVue] = useState<Vue>('timeline');
-  // Filtre par parc : la rangée de parcs s'affiche quand le filtre est ouvert
-  const [filtreOuvert, setFiltreOuvert] = useState(false);
-  const [parc, setParc] = useState<string>();
   // Mois passés dépliés via « Voir le mois »
   const [moisOuverts, setMoisOuverts] = useState<string[]>([]);
 
@@ -80,50 +76,36 @@ export default function ChroniquesScreen() {
   useEffect(() => navigation.addListener('tabPress', () => setVue('timeline')), [navigation]);
 
   const validees = useMemo(() => prouesses.filter((p) => p.obtenue), [prouesses]);
-  const parcs = useMemo(() => [...new Set(validees.map((p) => p.parc))].sort((a, b) => a.localeCompare(b, 'fr')), [validees]);
-  const filtrees = useMemo(() => (parc ? validees.filter((p) => p.parc === parc) : validees), [validees, parc]);
-  const etapes = useMemo(() => construireChroniques(filtrees), [filtrees]);
+  const etapes = useMemo(() => construireChroniques(validees), [validees]);
   // Vue grille : toutes les prouesses validées, de la plus récente à la plus ancienne
   const grille = useMemo(() => etapes.flatMap((e) => e.prouesses), [etapes]);
 
-  const visites = compterVisites(filtrees);
-  const sousTitre = `${compterSouvenirs(filtrees.length)} · ${visites} visite${visites > 1 ? 's' : ''} au parc`;
+  const visites = compterVisites(validees);
+  const sousTitre = `${compterSouvenirs(validees.length)} · ${visites} visite${visites > 1 ? 's' : ''} au parc`;
 
   const entete = (
     <View style={[styles.entete, { paddingTop: insets.top + 18 }]}>
-      <BarreOutils<Vue>
-        segments={[
-          { valeur: 'timeline', libelle: 'Timeline' },
-          { valeur: 'grille', libelle: 'Grille' },
-        ]}
-        vue={vue}
-        onChangeVue={setVue}
-        onRechercher={() => router.navigate('/prouesses')}
-        filtreActif={filtreOuvert || !!parc}
-        onFiltrer={() => setFiltreOuvert((ouvert) => !ouvert)}
-        libelleFiltre="Filtrer par parc"
-      />
+      <View style={styles.barre}>
+        <SegmentedControl<Vue>
+          segments={[
+            { valeur: 'timeline', libelle: 'Timeline' },
+            { valeur: 'grille', libelle: 'Grille' },
+          ]}
+          valeur={vue}
+          onChange={setVue}
+        />
+      </View>
       <HeaderTitle surtitre="Carnet de souvenirs" titre="Chroniques" sousTitre={sousTitre} />
-      {filtreOuvert && parcs.length ? (
-        <View style={styles.filtres}>
-          <Chip libelle="Tous les parcs" actif={!parc} onPress={() => setParc(undefined)} />
-          {parcs.map((nom) => (
-            <Chip key={nom} libelle={nom} actif={parc === nom} onPress={() => setParc(nom)} />
-          ))}
-        </View>
-      ) : null}
     </View>
   );
 
   const vide = (
     <Text style={styles.vide}>
-      {validees.length
-        ? 'Aucune prouesse validée dans ce parc.'
-        : 'Aucune prouesse validée pour l’instant. Photographiez une prouesse pour la retrouver ici.'}
+      Aucune prouesse validée pour l’instant. Photographiez une prouesse pour la retrouver ici.
     </Text>
   );
 
-  const fin = filtrees.length ? <Text style={styles.fin}>Chaque prouesse laisse une trace.</Text> : null;
+  const fin = validees.length ? <Text style={styles.fin}>Chaque prouesse laisse une trace.</Text> : null;
   const contenu = [styles.contenu, { paddingBottom: NAV_HEIGHT + insets.bottom + 32 }];
 
   const renderEtape = ({ item: etape }: { item: EtapeChroniques }) => {
@@ -192,10 +174,10 @@ const styles = StyleSheet.create({
     gap: 20,
     paddingBottom: 28,
   },
-  filtres: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
+  barre: {
+    height: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   etape: {
     gap: 16,
