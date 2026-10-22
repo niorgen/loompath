@@ -24,6 +24,9 @@ for (const [type, { singulier, pluriel }] of Object.entries(TYPE_LABELS)) {
   if (picto) [singulier, pluriel].forEach((libelle) => parNom.set(normaliser(libelle), picto));
 }
 
+// Le CSV nomme le parc « Disneyland Paris », la planche « Disneyland Park »
+parNom.set(normaliser('Disneyland Paris'), PICTOS['Disneyland Park']);
+
 export const pictoDe = (nom: string): DefinitionPicto | undefined => parNom.get(normaliser(nom));
 
 type Props = {
