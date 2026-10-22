@@ -2,18 +2,28 @@ import { Inter_400Regular, Inter_700Bold, Inter_800ExtraBold } from '@expo-googl
 import { Lora_700Bold } from '@expo-google-fonts/lora';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { View } from 'react-native';
+import { useEffect } from 'react';
 
 import { useProfil } from '@/state/profil';
 import { colors } from '@/theme';
 
+// Le splash reste affiché jusqu'à ce que l'app soit prête à s'afficher
+SplashScreen.preventAutoHideAsync();
+SplashScreen.setOptions({ duration: 300, fade: true });
+
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({ Inter_400Regular, Inter_700Bold, Inter_800ExtraBold, Lora_700Bold });
   const profil = useProfil();
+  const pret = fontsLoaded && profil.charge;
+
+  useEffect(() => {
+    if (pret) SplashScreen.hideAsync();
+  }, [pret]);
 
   // Le profil doit être lu pour savoir s'il faut montrer l'introduction
-  if (!fontsLoaded || !profil.charge) return <View style={{ flex: 1, backgroundColor: colors.background }} />;
+  if (!pret) return null;
 
   return (
     <>

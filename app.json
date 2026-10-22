@@ -10,8 +10,9 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.niorgen.loompath",
       "adaptiveIcon": {
-        "backgroundColor": "#050816",
+        "backgroundColor": "#0D1330",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -23,6 +24,15 @@
     },
     "plugins": [
       "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 240,
+          "resizeMode": "contain",
+          "backgroundColor": "#0D1330"
+        }
+      ],
       "expo-status-bar",
       "expo-font",
       "expo-image",
@@ -45,6 +55,13 @@
     "backgroundColor": "#050816",
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "1e6b402c-c4e6-4c92-aa49-79b4347c512a"
+      }
+    },
+    "owner": "niorgen"
   }
 }
