@@ -7,6 +7,8 @@ export type PointProuesse = {
   latitude: number;
   longitude: number;
   obtenue: boolean;
+  /** Remplace la couleur du point (ex. couleur du type sur la mini-carte du Journal) */
+  couleur?: string;
 };
 
 export type PointPhoto = {
@@ -22,6 +24,8 @@ export type DonneesCarte = {
   photos: PointPhoto[];
   /** Prouesse sur laquelle centrer la carte (ex. « Voir sur la carte » après une validation) */
   centre?: { id: string; latitude: number; longitude: number };
+  /** Position du joueur, affichée comme un point lavande cerclé */
+  joueur?: { latitude: number; longitude: number };
 };
 
 // Messages renvoyés par la carte
@@ -87,7 +91,8 @@ const CLUSTER = 'https://unpkg.com/leaflet.markercluster@1.5.3/dist';
  * L'app pousse les données via window.majDonnees(donnees) ; la carte répond par
  * des messages JSON (ReactNativeWebView sur mobile, window.parent sur le web).
  */
-export function construireHtmlCarte({ margeBas }: { margeBas: number }) {
+// apercu : carte figée (aucun geste) recadrée à chaque mise à jour sur les points et le joueur
+export function construireHtmlCarte({ margeBas, apercu = false }: { margeBas: number; apercu?: boolean }) {
   return `<!doctype html>
 <html lang="fr">
 <head>
@@ -146,8 +151,15 @@ ${FILTRE_TUILES}
   }
 
   var EMPRISE = ${JSON.stringify(EMPRISE)};
+  var APERCU = ${apercu};
   var carte = L.map('carte', {
     zoomControl: false,
+    dragging: !APERCU,
+    touchZoom: !APERCU,
+    scrollWheelZoom: !APERCU,
+    doubleClickZoom: !APERCU,
+    boxZoom: !APERCU,
+    keyboard: !APERCU,
     attributionControl: true,
     minZoom: ${ZOOM_MIN},
     maxBounds: EMPRISE,
@@ -180,17 +192,25 @@ ${FILTRE_TUILES}
     },
   }).addTo(carte);
 
+  var coucheJoueur = L.layerGroup().addTo(carte);
   var cadree = false;
   var centreId = null;
 
   window.majDonnees = function (donnees) {
     couchePoints.clearLayers();
     couchePhotos.clearLayers();
+    coucheJoueur.clearLayers();
+
+    if (donnees.joueur) {
+      L.circleMarker([donnees.joueur.latitude, donnees.joueur.longitude], {
+        radius: 7, weight: 3, color: '${colors.textPrimary}', fillColor: '${colors.accentSecondary}', fillOpacity: 1,
+      }).addTo(coucheJoueur);
+    }
 
     donnees.points.forEach(function (p) {
       L.circleMarker([p.latitude, p.longitude], {
         radius: 6, weight: 2, color: '${colors.background}',
-        fillColor: p.obtenue ? '${colors.accent}' : '${colors.textSecondary}', fillOpacity: 0.95,
+        fillColor: p.couleur || (p.obtenue ? '${colors.accent}' : '${colors.textSecondary}'), fillOpacity: 0.95,
       })
         .bindTooltip(p.titre, { direction: 'top', offset: [0, -6] })
         .on('click', function () { envoyer({ type: 'prouesse', id: p.id }); })
@@ -217,6 +237,14 @@ ${FILTRE_TUILES}
       centreId = donnees.centre.id;
       cadree = true;
       carte.setView([donnees.centre.latitude, donnees.centre.longitude], 18);
+    }
+
+    // Aperçu : toujours cadré sur les points et le joueur
+    if (APERCU) {
+      var emprise = donnees.points.map(function (p) { return [p.latitude, p.longitude]; });
+      if (donnees.joueur) emprise.push([donnees.joueur.latitude, donnees.joueur.longitude]);
+      if (emprise.length) carte.fitBounds(emprise, { padding: [24, 24], maxZoom: 18 });
+      return;
     }
 
     // Cadrage initial sur le parc, une seule fois pour ne pas perdre la position du joueur

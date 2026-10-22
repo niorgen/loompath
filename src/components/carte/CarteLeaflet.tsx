@@ -9,14 +9,16 @@ import { construireHtmlCarte, type DonneesCarte, type MessageCarte } from './car
 type Props = {
   donnees: DonneesCarte;
   margeBas: number;
+  /** Carte figée du Journal (voir construireHtmlCarte) */
+  apercu?: boolean;
   onMessage: (message: MessageCarte) => void;
 };
 
-export function CarteLeaflet({ donnees, margeBas, onMessage }: Props) {
+export function CarteLeaflet({ donnees, margeBas, apercu, onMessage }: Props) {
   const webview = useRef<WebView>(null);
   const [prete, setPrete] = useState(false);
   // La page n'est construite qu'une fois : les données passent ensuite par majDonnees
-  const html = useMemo(() => construireHtmlCarte({ margeBas }), [margeBas]);
+  const html = useMemo(() => construireHtmlCarte({ margeBas, apercu }), [margeBas, apercu]);
 
   useEffect(() => {
     if (prete) webview.current?.injectJavaScript(`window.majDonnees(${JSON.stringify(donnees)}); true;`);

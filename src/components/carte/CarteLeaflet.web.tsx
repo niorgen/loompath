@@ -5,16 +5,18 @@ import { construireHtmlCarte, type DonneesCarte, type MessageCarte } from './car
 type Props = {
   donnees: DonneesCarte;
   margeBas: number;
+  /** Carte figée du Journal (voir construireHtmlCarte) */
+  apercu?: boolean;
   onMessage: (message: MessageCarte) => void;
 };
 
 type FenetreCarte = Window & { majDonnees?: (donnees: DonneesCarte) => void };
 
 // Version web : react-native-webview n'existe pas sur le web, on passe par une iframe
-export function CarteLeaflet({ donnees, margeBas, onMessage }: Props) {
+export function CarteLeaflet({ donnees, margeBas, apercu, onMessage }: Props) {
   const iframe = useRef<HTMLIFrameElement>(null);
   const [prete, setPrete] = useState(false);
-  const html = useMemo(() => construireHtmlCarte({ margeBas }), [margeBas]);
+  const html = useMemo(() => construireHtmlCarte({ margeBas, apercu }), [margeBas, apercu]);
 
   useEffect(() => {
     const recevoir = (event: MessageEvent) => {

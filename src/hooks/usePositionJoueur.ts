@@ -65,18 +65,19 @@ export function usePositionJoueur() {
   return { position, refusee, autoriser };
 }
 
-// Au-delà de cette distance de toute prouesse, le joueur n'est dans aucun parc
-const RAYON_PARC_KM = 2;
+// Au-delà de cette distance de toute prouesse d'un land, le joueur n'est dans aucun land
+const RAYON_LAND_KM = 0.4;
 
-// Parc du joueur : celui de la prouesse géolocalisée (coordonnées du CSV) la plus proche
-export function useParcDuJoueur(position: Coords | undefined) {
+// Land du joueur : celui de la prouesse géolocalisée (coordonnées du CSV) la plus proche
+export function useLandDuJoueur(position: Coords | undefined) {
   return useMemo(() => {
     if (!position) return undefined;
-    let plusProche: { parc: string; distance: number } | undefined;
+    let plusProche: { land: string; distance: number } | undefined;
     for (const prouesse of prouessesSource.filter(estLocalisee)) {
+      if (!prouesse.land) continue;
       const distance = distanceKm(position, prouesse);
-      if (!plusProche || distance < plusProche.distance) plusProche = { parc: prouesse.parc, distance };
+      if (!plusProche || distance < plusProche.distance) plusProche = { land: prouesse.land, distance };
     }
-    return plusProche && plusProche.distance <= RAYON_PARC_KM ? plusProche.parc : undefined;
+    return plusProche && plusProche.distance <= RAYON_LAND_KM ? plusProche.land : undefined;
   }, [position]);
 }

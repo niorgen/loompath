@@ -16,14 +16,21 @@ import { colors, fonts } from '@/theme';
 
 export default function DetailProuessesScreen() {
   const insets = useSafeAreaInsets();
-  // parc : identifiant du parc quand la catégorie est ouverte depuis sa page (ex. les Secrets d'un seul parc)
-  const { id, parc: parcId } = useLocalSearchParams<{ id: string; parc?: string }>();
+  // parc / land : identifiant du parc ou du land qui limite la catégorie (ex. les Secrets d'un seul parc,
+  // ouverts depuis sa page, ou ceux du land où se trouve le joueur, ouverts depuis le Journal)
+  const { id, parc: parcId, land: landId } = useLocalSearchParams<{ id: string; parc?: string; land?: string }>();
   const prouesses = useProuesses();
   const carnet = useCarnet();
   const parc = parcId ? carnet.find((c) => c.id === parcId && c.niveau === 'parc') : undefined;
+  const land = landId ? carnet.find((c) => c.id === landId && c.niveau === 'land') : undefined;
   const categories = useMemo(
-    () => (parc ? construireCarnet(prouesses.filter((p) => p.parc === parc.nom)) : carnet),
-    [parc, prouesses, carnet],
+    () =>
+      parc
+        ? construireCarnet(prouesses.filter((p) => p.parc === parc.nom))
+        : land
+          ? construireCarnet(prouesses.filter((p) => p.land === land.nom))
+          : carnet,
+    [parc, land, prouesses, carnet],
   );
   const detail = categories.find((c) => c.id === id);
 
@@ -41,7 +48,9 @@ export default function DetailProuessesScreen() {
         ? ariane(detail.prouesses[0]?.parc ?? '')
         : parc
           ? ariane(parc.nom)
-          : 'Catégories';
+          : land
+            ? `${ariane(land.prouesses[0]?.parc ?? '')} / ${land.nom}`
+            : 'Catégories';
 
   // En-tête et jauge forment un seul bloc dans le design
   const entete = (
