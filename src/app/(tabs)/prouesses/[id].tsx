@@ -77,6 +77,7 @@ export default function DetailProuessesScreen() {
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
     >
+      {entete}
       {detail ? (
         <SearchField
           value={recherche}
@@ -85,7 +86,6 @@ export default function DetailProuessesScreen() {
           erreur={!trouvees.length}
         />
       ) : null}
-      {entete}
       {detail && !trouvees.length ? (
         <Text style={styles.vide}>Aucune prouesse ne correspond à « {recherche.trim()} ».</Text>
       ) : detail ? (
@@ -113,7 +113,7 @@ type EcranParcProps = {
   contenu: StyleProp<ViewStyle>;
 };
 
-// Page d'un parc : recherche, grille des lands, puis les types de prouesses limités au parc
+// Page d'un parc : en-tête, recherche, grille des lands, puis les types de prouesses limités au parc
 function EcranParc({ parc, entete, contenu }: EcranParcProps) {
   const [recherche, setRecherche] = useState('');
   const sousCategories = useMemo(
@@ -136,13 +136,13 @@ function EcranParc({ parc, entete, contenu }: EcranParcProps) {
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
     >
+      {entete}
       <SearchField
         value={recherche}
         onChangeText={setRecherche}
         placeholder="Rechercher une attraction…"
         erreur={!lands.length && !types.length && !trouvees.length}
       />
-      {entete}
 
       <ResultatsProuesses prouesses={trouvees} />
 
