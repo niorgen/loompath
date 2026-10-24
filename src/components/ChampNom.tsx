@@ -1,7 +1,7 @@
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { NOM_MAX, nomValide } from '@/state/profil';
-import { colors, fonts, normalLineHeight, radius } from '@/theme';
+import { colors, fonts, normalLineHeight, radius, sansContourWeb } from '@/theme';
 
 type Props = {
   valeur: string;
@@ -61,6 +61,7 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: colors.borderSubtle,
     borderRadius: radius.md + 4,
+    ...sansContourWeb,
   },
   saisieValide: {
     borderColor: colors.accentSecondary,

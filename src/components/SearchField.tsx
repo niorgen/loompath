@@ -1,7 +1,8 @@
 import { Image } from 'expo-image';
+import { useState } from 'react';
 import { StyleSheet, TextInput, View } from 'react-native';
 
-import { colors, fonts, radius } from '@/theme';
+import { colors, fonts, radius, sansContourWeb } from '@/theme';
 
 type Props = {
   value: string;
@@ -10,8 +11,10 @@ type Props = {
 };
 
 export function SearchField({ value, onChangeText, placeholder = 'Rechercher une prouesse…' }: Props) {
+  // Le champ entier s'entoure de lavande pendant la saisie (à la place du contour du navigateur)
+  const [actif, setActif] = useState(false);
   return (
-    <View style={styles.field}>
+    <View style={[styles.field, actif && styles.fieldActif]}>
       <Image
         source={require('../../assets/icons/search.svg')}
         style={styles.icon}
@@ -28,6 +31,8 @@ export function SearchField({ value, onChangeText, placeholder = 'Rechercher une
         autoCorrect={false}
         clearButtonMode="while-editing"
         accessibilityLabel={placeholder}
+        onFocus={() => setActif(true)}
+        onBlur={() => setActif(false)}
       />
     </View>
   );
@@ -46,6 +51,9 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     borderRadius: radius.pill,
   },
+  fieldActif: {
+    borderColor: colors.accentSecondary,
+  },
   icon: {
     width: 17,
     height: 17,
@@ -54,6 +62,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignSelf: 'stretch',
     padding: 0,
+    ...sansContourWeb,
     fontFamily: fonts.interRegular,
     fontSize: 14,
     color: colors.textPrimary,

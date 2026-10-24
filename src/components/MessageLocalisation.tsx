@@ -1,5 +1,6 @@
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { DegradeAccent } from '@/components/Fonds';
 import { colors, fonts, normalLineHeight, radius } from '@/theme';
 
 type Props = {
@@ -24,6 +25,7 @@ export function MessageLocalisation({ onAutoriser }: Props) {
         accessibilityRole="button"
         style={({ pressed }) => [styles.bouton, pressed && { opacity: 0.85 }]}
       >
+        <DegradeAccent />
         <Text style={styles.libelleBouton}>Activer</Text>
       </Pressable>
     </View>
@@ -60,13 +62,14 @@ const styles = StyleSheet.create({
   bouton: {
     paddingHorizontal: 14,
     paddingVertical: 8,
-    backgroundColor: colors.action,
+    backgroundColor: colors.accentSecondary,
     borderRadius: radius.pill,
+    overflow: 'hidden',
   },
   libelleBouton: {
     fontFamily: fonts.interBold,
     fontSize: 12,
     lineHeight: normalLineHeight(12),
-    color: colors.textOnAction,
+    color: colors.background,
   },
 });

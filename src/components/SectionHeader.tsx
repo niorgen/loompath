@@ -25,6 +25,7 @@ export function SectionHeader({ surtitre, titre, onPress }: Props) {
             source={require('../../assets/icons/chevron-right.svg')}
             style={styles.chevron}
             contentFit="contain"
+            tintColor={colors.surtitre}
           />
         </View>
       </View>

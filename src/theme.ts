@@ -1,3 +1,5 @@
+import { Platform, type TextStyle } from 'react-native';
+
 // Tokens issus du Figma Loompath (fichier CnUNdVoaoc5vBHQH8xrdB3)
 export const colors = {
   background: '#050816',
@@ -77,3 +79,8 @@ export const shadows = {
   card: '0px 12px 32px 0px rgba(2,6,23,0.33)',
   nav: '0px 10px 12px 0px rgba(2,6,23,0.48)',
 } as const;
+
+// Champs de saisie : pas de contour de focus du navigateur (web), la bordure du champ porte l'état actif.
+// « none » n'est pas typé par React Native mais est transmis tel quel par react-native-web.
+export const sansContourWeb: TextStyle =
+  Platform.OS === 'web' ? ({ outlineStyle: 'none' } as unknown as TextStyle) : {};
