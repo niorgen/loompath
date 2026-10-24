@@ -16,7 +16,7 @@ import { FondNuit } from '@/components/Fonds';
 import { Etincelle } from '@/components/Picto';
 import { fonts, illustration } from '@/theme';
 
-// Splash animé « Nuit » (canvas « Design ») : logo qui se dessine, titre, étincelles et points de chargement.
+// Splash animé « Nuit » (canvas « Design ») : logo qui se dessine, titre et étincelles.
 // Il prend le relais du splash natif puis s'efface quand l'app est prête.
 
 const LAVANDE = '#C9B6FF';
@@ -186,21 +186,6 @@ function EtincelleCiel({ x, y, taille, couleur, delai }: (typeof CIEL)[number]) 
   );
 }
 
-function Point({ delai }: { delai: number }) {
-  const v = useAnimation(delai, 600, COURBES.boucle, true);
-  return (
-    <Animated.View
-      style={[
-        styles.point,
-        {
-          opacity: v.interpolate({ inputRange: [0, 1], outputRange: [0.25, 1] }),
-          transform: [{ translateY: v.interpolate({ inputRange: [0, 1], outputRange: [0, -4] }) }],
-        },
-      ]}
-    />
-  );
-}
-
 function Halo() {
   const id = `halo-${useId().replace(/[^\w-]/g, '')}`;
   const v = useAnimation(0, 1200, COURBES.sortie);
@@ -268,13 +253,6 @@ export function SplashAnime({ pret, onTermine }: Props) {
           </Monte>
         </View>
       </View>
-      <Monte delai={1300} style={styles.chargement}>
-        <View accessible accessibilityRole="progressbar" accessibilityLabel="Chargement" style={styles.points}>
-          <Point delai={0} />
-          <Point delai={180} />
-          <Point delai={360} />
-        </View>
-      </Monte>
     </Animated.View>
   );
 }
@@ -328,22 +306,5 @@ const styles = StyleSheet.create({
   },
   ciel: {
     position: 'absolute',
-  },
-  chargement: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 72,
-  },
-  points: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 8,
-  },
-  point: {
-    width: 7,
-    height: 7,
-    borderRadius: 4,
-    backgroundColor: LAVANDE,
   },
 });
