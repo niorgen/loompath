@@ -8,6 +8,22 @@ function Mesure({ children }: { children: ReactNode }) {
   return <View style={styles.mesure}>{children}</View>;
 }
 
+// Paire de cartes chiffrées (ex. souvenirs et visites au parc), au format des cartes de score
+export function ChiffresCards({ chiffres }: { chiffres: { valeur: number; libelle: string }[] }) {
+  return (
+    <View style={styles.row}>
+      {chiffres.map(({ valeur, libelle }) => (
+        <Mesure key={libelle}>
+          <Text style={styles.compteur}>{valeur}</Text>
+          <Text style={styles.caption} numberOfLines={2}>
+            {libelle}
+          </Text>
+        </Mesure>
+      ))}
+    </View>
+  );
+}
+
 type Props = {
   score: number;
   /** Progression entre 0 et 1 */

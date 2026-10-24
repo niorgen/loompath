@@ -13,7 +13,7 @@ type Props = {
   heure: string;
   /** Libellé complet pour l'accessibilité, ex. « 20 octobre 2026 » */
   date: string;
-  /** Type de la prouesse (chip pleine sur la grande carte, pastille sur la petite) */
+  /** Type de la prouesse (chip pleine), suivi des thèmes (chips bordées) */
   type?: string;
   themes: string[];
   /** Grande carte : premier souvenir d'une journée ; petite : grille à deux colonnes */
@@ -56,21 +56,12 @@ export function CarteSouvenir({ titre, photoUri, miniature, heure, date, type, t
         <Text style={grande ? styles.titre : styles.titrePetit} numberOfLines={grande ? 1 : 2}>
           {titre}
         </Text>
-        {grande ? (
-          type || themes.length ? (
-            <View style={styles.themes}>
-              {type ? <Chip libelle={type} actif /> : null}
-              {themes.map((theme) => (
-                <Chip key={theme} libelle={theme} />
-              ))}
-            </View>
-          ) : null
-        ) : type ? (
-          <View style={styles.type}>
-            <View style={styles.pastille} />
-            <Text style={styles.texteType} numberOfLines={1}>
-              {type}
-            </Text>
+        {type || themes.length ? (
+          <View style={[styles.themes, !grande && styles.themesPetits]}>
+            {type ? <Chip libelle={type} actif /> : null}
+            {themes.map((theme) => (
+              <Chip key={theme} libelle={theme} />
+            ))}
           </View>
         ) : null}
       </View>
@@ -157,22 +148,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 8,
   },
-  type: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  themesPetits: {
     gap: 6,
-  },
-  pastille: {
-    width: 8,
-    height: 8,
-    borderRadius: radius.pill,
-    backgroundColor: colors.accent,
-  },
-  texteType: {
-    flexShrink: 1,
-    fontFamily: fonts.interRegular,
-    fontSize: 12,
-    lineHeight: normalLineHeight(12),
-    color: colors.textSecondary,
   },
 });

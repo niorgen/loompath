@@ -28,7 +28,7 @@ const ouvrir = (prouesse: Prouesse) => router.push(`/prouesse/${prouesse.id}`);
 
 function Souvenir({ prouesse, taille }: { prouesse: Prouesse; taille: 'grande' | 'petite' }) {
   const type = prouesse.type && TYPE_LABELS[prouesse.type].singulier;
-  // Sur la grande carte, le type est en tête ; le lieu et les thèmes du CSV suivent
+  // Le type est en tête ; le lieu et les thèmes du CSV suivent
   const themes = [...new Set([prouesse.land ?? prouesse.parc, ...(prouesse.themes ?? [])])].filter((t) => t !== type);
   return (
     <CarteSouvenir

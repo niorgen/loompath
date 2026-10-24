@@ -11,8 +11,8 @@ import { HeaderTitle } from '@/components/HeaderTitle';
 import { ListRow } from '@/components/ListRow';
 import { NAV_HEIGHT } from '@/components/NavigationMenu';
 import { Picto, Trace, TRACES } from '@/components/Picto';
-import { StatCards } from '@/components/StatCards';
-import { calculerStats, compterSouvenirs, compterVisites } from '@/data';
+import { ChiffresCards, StatCards } from '@/components/StatCards';
+import { calculerStats, compterVisites } from '@/data';
 import { useAutorisations, type Autorisation } from '@/hooks/useAutorisations';
 import { definirNom, effacerProfil, nomValide, revoirIntroduction, useProfil } from '@/state/profil';
 import { effacerValidations, useProuesses } from '@/state/validations';
@@ -100,9 +100,12 @@ export default function ProfilScreen() {
 
       <Section titre="Mes chiffres">
         <StatCards score={stats.score} progression={stats.progression} />
-        <Text style={styles.resume}>
-          {compterSouvenirs(validees.length)} · {visites} visite{visites > 1 ? 's' : ''} au parc
-        </Text>
+        <ChiffresCards
+          chiffres={[
+            { valeur: validees.length, libelle: validees.length > 1 ? 'Souvenirs' : 'Souvenir' },
+            { valeur: visites, libelle: visites > 1 ? 'Visites au parc' : 'Visite au parc' },
+          ]}
+        />
       </Section>
 
       <Section titre="Autorisations">
@@ -233,13 +236,6 @@ const styles = StyleSheet.create({
     fontSize: 23,
     lineHeight: 23 * 1.1,
     color: colors.textPrimaryAlt,
-  },
-  resume: {
-    fontFamily: fonts.interRegular,
-    fontSize: 13,
-    lineHeight: normalLineHeight(13),
-    color: colors.textSecondary,
-    textAlign: 'center',
   },
   enteteLigne: {
     flexDirection: 'row',
