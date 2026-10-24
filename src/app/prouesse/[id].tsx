@@ -11,6 +11,7 @@ import { choisirSourcePhoto } from '@/components/choisirSourcePhoto';
 import { confirmer } from '@/components/confirmer';
 import { FondNuit } from '@/components/Fonds';
 import { HeaderTitle } from '@/components/HeaderTitle';
+import { Trace, TRACES } from '@/components/Picto';
 import { TYPE_LABELS } from '@/data';
 import { useSourcePhoto } from '@/hooks/useSourcePhoto';
 import { supprimerValidation, useProuesses, validerProuesse } from '@/state/validations';
@@ -140,7 +141,7 @@ export default function ProuesseScreen() {
         hitSlop={8}
         style={({ pressed }) => [styles.bouton, styles.retour, { top: insets.top + MARGE }, pressed && { opacity: 0.7 }]}
       >
-        <Image source={require('../../../assets/icons/chevron-left-16.svg')} style={styles.chevron} contentFit="contain" />
+        <Trace trace={TRACES.retour} couleur={colors.accentSecondary} taille={20} epaisseur={2} />
       </Pressable>
 
       {/* Une fois la prouesse validée, la photo se change par le menu « ⋯ » (Modifier la photo) */}
@@ -177,7 +178,7 @@ export default function ProuesseScreen() {
             <Image source={require('../../../assets/icons/more-16.svg')} style={styles.chevron} contentFit="contain" />
           </Pressable>
           {menuOuvert ? (
-            <View style={[styles.menu, { top: insets.top + MARGE + 34 + 8 }]} accessibilityRole="menu">
+            <View style={[styles.menu, { top: insets.top + MARGE + 44 + 8 }]} accessibilityRole="menu">
               <Pressable
                 onPress={modifierPhoto}
                 accessibilityRole="menuitem"
@@ -232,11 +233,13 @@ const styles = StyleSheet.create({
   },
   bouton: {
     position: 'absolute',
-    width: 34,
-    height: 34,
+    width: 44,
+    height: 44,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.actionSecondary,
+    backgroundColor: colors.surfaceBouton,
+    borderWidth: 1,
+    borderColor: colors.borderBouton,
     borderRadius: radius.pill,
   },
   retour: {

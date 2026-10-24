@@ -30,7 +30,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
     lineHeight: normalLineHeight(10),
     letterSpacing: 1.2,
-    color: colors.accent,
+    color: colors.surtitre,
   },
   titre: {
     fontFamily: fonts.loraBold,

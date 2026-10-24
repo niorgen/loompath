@@ -1,6 +1,6 @@
-import { Image } from 'expo-image';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { Trace, TRACES } from '@/components/Picto';
 import { colors, fonts, normalLineHeight, radius } from '@/theme';
 
 type Props = {
@@ -20,11 +20,7 @@ export function DetailHeader({ surtitre, titre, onBack }: Props) {
         hitSlop={8}
         style={({ pressed }) => [styles.bouton, pressed && { opacity: 0.7 }]}
       >
-        <Image
-          source={require('../../assets/icons/chevron-left-16.svg')}
-          style={styles.chevron}
-          contentFit="contain"
-        />
+        <Trace trace={TRACES.retour} couleur={colors.accentSecondary} taille={20} epaisseur={2} />
       </Pressable>
       <View style={styles.titres}>
         <Text style={styles.surtitre}>{surtitre}</Text>
@@ -44,16 +40,14 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   bouton: {
-    width: 34,
-    height: 34,
+    width: 44,
+    height: 44,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.surface,
+    backgroundColor: colors.surfaceBouton,
+    borderWidth: 1,
+    borderColor: colors.borderBouton,
     borderRadius: radius.pill,
-  },
-  chevron: {
-    width: 16,
-    height: 16,
   },
   titres: {
     flex: 1,
@@ -64,7 +58,7 @@ const styles = StyleSheet.create({
     fontSize: 9,
     lineHeight: normalLineHeight(9),
     letterSpacing: 1.5,
-    color: colors.accentSecondary,
+    color: colors.surtitre,
   },
   titre: {
     fontFamily: fonts.loraBold,

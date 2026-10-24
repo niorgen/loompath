@@ -1,6 +1,7 @@
 import { Image } from 'expo-image';
 import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
 
+import { DegradeAccent } from '@/components/Fonds';
 import { Picto } from '@/components/Picto';
 import { colors, fonts, normalLineHeight, radius } from '@/theme';
 
@@ -29,18 +30,19 @@ export function BoutonAction({ libelle, onPress, disabled, chargement, picto, fl
         pressed && { opacity: 0.85 },
       ]}
     >
+      {!disabled ? <DegradeAccent /> : null}
       {chargement ? (
-        <ActivityIndicator color={colors.textOnAction} />
+        <ActivityIndicator color={colors.background} />
       ) : (
         <>
-          {picto ? <Picto nom={picto} couleur={disabled ? colors.textSecondary : colors.textOnAction} /> : null}
+          {picto ? <Picto nom={picto} couleur={disabled ? colors.textSecondary : colors.background} /> : null}
           <Text style={[styles.libelle, disabled && styles.libelleInactif]}>{libelle}</Text>
           {fleche ? (
             <Image
               source={require('../../assets/icons/arrow-right.svg')}
               style={styles.fleche}
               contentFit="contain"
-              tintColor={disabled ? colors.textSecondary : undefined}
+              tintColor={disabled ? colors.textSecondary : colors.background}
             />
           ) : null}
         </>
@@ -58,8 +60,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 10,
     paddingHorizontal: 18,
-    backgroundColor: colors.action,
+    backgroundColor: colors.accentSecondary,
     borderRadius: radius.pill,
+    overflow: 'hidden',
   },
   boutonInactif: {
     backgroundColor: colors.surfaceRaised,
@@ -68,7 +71,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.interExtraBold,
     fontSize: 12,
     lineHeight: normalLineHeight(12),
-    color: colors.textOnAction,
+    color: colors.background,
   },
   libelleInactif: {
     color: colors.textSecondary,

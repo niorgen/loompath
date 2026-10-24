@@ -22,6 +22,10 @@ export const colors = {
   textNavInactive: '#a8aed2',
   textOnLight: '#17203a',
   accent: '#cab5ff',
+  surtitre: '#4E97DE',
+  // Boutons ronds (précédent) : pastille translucide bordée
+  surfaceBouton: 'rgba(22,29,66,0.85)',
+  borderBouton: '#2F3A73',
   accentSecondary: '#c9b5ff',
 } as const;
 

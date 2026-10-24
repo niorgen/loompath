@@ -48,7 +48,7 @@ const styles = StyleSheet.create({
     fontSize: 9,
     lineHeight: normalLineHeight(9),
     letterSpacing: 1.5,
-    color: colors.accentSecondary,
+    color: colors.surtitre,
   },
   chevronBox: {
     width: 5,
