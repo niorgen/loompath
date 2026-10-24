@@ -32,6 +32,7 @@ export default function CarnetScreen() {
     { titre: 'Lands', categories: enRecherche ? resultats.filter((c) => c.niveau === 'land') : [] },
     { titre: 'Catégories', categories: resultats.filter((c) => c.niveau === 'type') },
   ].filter((s) => s.categories.length);
+  const aucunResultat = !sections.length && !trouvees.length;
 
   return (
     <ScrollView
@@ -42,7 +43,12 @@ export default function CarnetScreen() {
       showsVerticalScrollIndicator={false}
     >
       <HeaderTitle titre="Prouesses" />
-      <SearchField value={recherche} onChangeText={setRecherche} placeholder="Rechercher une attraction…" />
+      <SearchField
+        value={recherche}
+        onChangeText={setRecherche}
+        placeholder="Rechercher une attraction…"
+        erreur={aucunResultat}
+      />
 
       <ResultatsProuesses prouesses={trouvees} />
 
@@ -55,7 +61,7 @@ export default function CarnetScreen() {
         </View>
       ))}
 
-      {!sections.length && !trouvees.length ? (
+      {aucunResultat ? (
         <Text style={styles.vide}>Aucun résultat pour « {recherche.trim()} ».</Text>
       ) : null}
     </ScrollView>

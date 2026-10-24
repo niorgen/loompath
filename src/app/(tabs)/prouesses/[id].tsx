@@ -78,7 +78,12 @@ export default function DetailProuessesScreen() {
       showsVerticalScrollIndicator={false}
     >
       {detail ? (
-        <SearchField value={recherche} onChangeText={setRecherche} placeholder="Rechercher une prouesse…" />
+        <SearchField
+          value={recherche}
+          onChangeText={setRecherche}
+          placeholder="Rechercher une prouesse…"
+          erreur={!trouvees.length}
+        />
       ) : null}
       {entete}
       {detail && !trouvees.length ? (
@@ -131,7 +136,12 @@ function EcranParc({ parc, entete, contenu }: EcranParcProps) {
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
     >
-      <SearchField value={recherche} onChangeText={setRecherche} placeholder="Rechercher une attraction…" />
+      <SearchField
+        value={recherche}
+        onChangeText={setRecherche}
+        placeholder="Rechercher une attraction…"
+        erreur={!lands.length && !types.length && !trouvees.length}
+      />
       {entete}
 
       <ResultatsProuesses prouesses={trouvees} />

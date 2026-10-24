@@ -1,6 +1,5 @@
 import { Image } from 'expo-image';
-import { useState } from 'react';
-import { StyleSheet, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { colors, fonts, radius, sansContourWeb } from '@/theme';
 
@@ -8,17 +7,22 @@ type Props = {
   value: string;
   onChangeText: (text: string) => void;
   placeholder?: string;
+  /** La recherche ne donne aucun résultat : champ en rose */
+  erreur?: boolean;
 };
 
-export function SearchField({ value, onChangeText, placeholder = 'Rechercher une prouesse…' }: Props) {
-  // Le champ entier s'entoure de lavande pendant la saisie (à la place du contour du navigateur)
-  const [actif, setActif] = useState(false);
+// Champ de recherche (Figma « Composants » 2:4902) : vide, rempli (bordure lavande + effacer) ou en erreur
+export function SearchField({ value, onChangeText, placeholder = 'Rechercher une prouesse…', erreur }: Props) {
+  const rempli = value.length > 0;
+  const enErreur = rempli && erreur;
+
   return (
-    <View style={[styles.field, actif && styles.fieldActif]}>
+    <View style={[styles.field, enErreur ? styles.fieldErreur : rempli && styles.fieldRempli]}>
       <Image
         source={require('../../assets/icons/search.svg')}
         style={styles.icon}
         contentFit="contain"
+        tintColor={rempli && !enErreur ? colors.accent : undefined}
       />
       <TextInput
         value={value}
@@ -26,14 +30,21 @@ export function SearchField({ value, onChangeText, placeholder = 'Rechercher une
         placeholder={placeholder}
         placeholderTextColor={colors.textSecondary}
         selectionColor={colors.accent}
-        style={styles.input}
+        style={[styles.input, enErreur && styles.inputErreur]}
         returnKeyType="search"
         autoCorrect={false}
-        clearButtonMode="while-editing"
         accessibilityLabel={placeholder}
-        onFocus={() => setActif(true)}
-        onBlur={() => setActif(false)}
       />
+      {rempli && !enErreur ? (
+        <Pressable
+          onPress={() => onChangeText('')}
+          accessibilityRole="button"
+          accessibilityLabel="Effacer la recherche"
+          hitSlop={12}
+        >
+          <Image source={require('../../assets/icons/circle-x.svg')} style={styles.effacer} contentFit="contain" />
+        </Pressable>
+      ) : null}
     </View>
   );
 }
@@ -46,13 +57,20 @@ const styles = StyleSheet.create({
     alignSelf: 'stretch',
     gap: 10,
     paddingHorizontal: 14,
+    overflow: 'hidden',
     backgroundColor: colors.surfaceRaised,
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: radius.pill,
   },
-  fieldActif: {
-    borderColor: colors.accentSecondary,
+  fieldRempli: {
+    borderWidth: 2,
+    borderColor: colors.accent,
+    // La bordure de 2 px ne décale pas le contenu
+    paddingHorizontal: 13,
+  },
+  fieldErreur: {
+    borderColor: colors.erreur,
   },
   icon: {
     width: 17,
@@ -65,6 +83,13 @@ const styles = StyleSheet.create({
     ...sansContourWeb,
     fontFamily: fonts.interRegular,
     fontSize: 14,
-    color: colors.textPrimary,
+    color: colors.textSecondary,
+  },
+  inputErreur: {
+    color: colors.erreur,
+  },
+  effacer: {
+    width: 16,
+    height: 16,
   },
 });
