@@ -33,6 +33,26 @@ export type DonneesCarte = {
 // Messages renvoyés par la carte : appui sur une prouesse, ou sur le fond de carte
 export type MessageCarte = { type: 'prouesse'; id: string } | { type: 'fond' };
 
+// Lit un message de la carte : tout ce qui n'est pas un message attendu est ignoré
+export function lireMessageCarte(brut: unknown): MessageCarte | { type: 'pret' } | undefined {
+  if (typeof brut !== 'string') return undefined;
+  let message: unknown;
+  try {
+    message = JSON.parse(brut);
+  } catch {
+    return undefined;
+  }
+  if (typeof message !== 'object' || message === null) return undefined;
+  const { type, id } = message as { type?: unknown; id?: unknown };
+  if (type === 'pret' || type === 'fond') return { type };
+  // Identifiant de prouesse : chiffres et lettres seulement (il finit dans une route)
+  if (type === 'prouesse' && typeof id === 'string' && /^[\w-]{1,32}$/.test(id)) return { type, id };
+  return undefined;
+}
+
+// Adresse de base de la page de la carte (WebView) : seule navigation autorisée dans la carte
+export const URL_CARTE = 'https://loompath.app/';
+
 // assets/icons/pin-image.svg (badge des pins photo), tel qu'exporté depuis Figma
 const ICONE_IMAGE = `<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="image" clip-path="url(#clip0_0_126)"><path id="Vector" d="M8.75 6.24987L7.46417 4.96404C7.30789 4.80781 7.09597 4.72005 6.875 4.72005C6.65403 4.72005 6.44211 4.80781 6.28583 4.96404L2.5 8.74987M2.08333 1.25H7.91667C8.3769 1.25 8.75 1.6231 8.75 2.08333V7.91667C8.75 8.3769 8.3769 8.75 7.91667 8.75H2.08333C1.6231 8.75 1.25 8.3769 1.25 7.91667V2.08333C1.25 1.6231 1.6231 1.25 2.08333 1.25ZM4.58333 3.75C4.58333 4.21024 4.21024 4.58333 3.75 4.58333C3.28976 4.58333 2.91667 4.21024 2.91667 3.75C2.91667 3.28976 3.28976 2.91667 3.75 2.91667C4.21024 2.91667 4.58333 3.28976 4.58333 3.75Z" stroke="white" stroke-linecap="round"/></g><defs><clipPath id="clip0_0_126"><rect width="10" height="10" fill="white"/></clipPath></defs></svg>`;
 
@@ -88,6 +108,15 @@ const FILTRE_TUILES = `<svg width="0" height="0" style="position:absolute"><filt
 const LEAFLET = 'https://unpkg.com/leaflet@1.9.4/dist';
 const CLUSTER = 'https://unpkg.com/leaflet.markercluster@1.5.3/dist';
 
+// Empreintes SRI des fichiers du CDN (celles de Leaflet sont publiées sur leafletjs.com) :
+// un fichier modifié sur le CDN est refusé par le navigateur au lieu d'être exécuté
+const SRI = {
+  leafletCss: 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=',
+  leafletJs: 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=',
+  clusterCss: 'sha256-YU3qCpj/P06tdPBJGPax0bm6Q1wltfwjsho5TR4+TYc=',
+  clusterJs: 'sha256-Hk4dIpcqOSb0hZjgyvFOP+cEmDXUKKNE/tT542ZbNQg=',
+};
+
 /**
  * Page Leaflet autonome (fond CARTO Dark Matter, points des prouesses + pins photo regroupés).
  * L'app pousse les données via window.majDonnees(donnees) ; la carte répond par
@@ -100,8 +129,10 @@ export function construireHtmlCarte({ margeBas, apercu = false }: { margeBas: nu
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-<link rel="stylesheet" href="${LEAFLET}/leaflet.css" />
-<link rel="stylesheet" href="${CLUSTER}/MarkerCluster.css" />
+<!-- Les liens (attributions) s'ouvrent hors de la carte : navigateur sur le web, interceptés dans la WebView -->
+<base target="_blank" />
+<link rel="stylesheet" href="${LEAFLET}/leaflet.css" integrity="${SRI.leafletCss}" crossorigin="anonymous" />
+<link rel="stylesheet" href="${CLUSTER}/MarkerCluster.css" integrity="${SRI.clusterCss}" crossorigin="anonymous" />
 <link rel="preconnect" href="https://fonts.gstatic.com" />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@800&display=swap" />
 <style>
@@ -147,8 +178,8 @@ export function construireHtmlCarte({ margeBas, apercu = false }: { margeBas: nu
 <body>
 ${FILTRE_TUILES}
 <div id="carte"></div>
-<script src="${LEAFLET}/leaflet.js"></script>
-<script src="${CLUSTER}/leaflet.markercluster.js"></script>
+<script src="${LEAFLET}/leaflet.js" integrity="${SRI.leafletJs}" crossorigin="anonymous"></script>
+<script src="${CLUSTER}/leaflet.markercluster.js" integrity="${SRI.clusterJs}" crossorigin="anonymous"></script>
 <script>
   var ICONE_IMAGE = ${JSON.stringify(ICONE_IMAGE)};
 

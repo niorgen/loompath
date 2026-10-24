@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { StyleSheet } from 'react-native';
+import { Linking, StyleSheet } from 'react-native';
 import { WebView, type WebViewMessageEvent } from 'react-native-webview';
+import type { ShouldStartLoadRequest } from 'react-native-webview/lib/WebViewTypes';
 
 import { colors } from '@/theme';
 
-import { construireHtmlCarte, type DonneesCarte, type MessageCarte } from './carteHtml';
+import { construireHtmlCarte, lireMessageCarte, URL_CARTE, type DonneesCarte, type MessageCarte } from './carteHtml';
 
 type Props = {
   donnees: DonneesCarte;
@@ -25,16 +26,25 @@ export function CarteLeaflet({ donnees, margeBas, apercu, onMessage }: Props) {
   }, [prete, donnees]);
 
   const recevoir = (event: WebViewMessageEvent) => {
-    const message = JSON.parse(event.nativeEvent.data) as MessageCarte | { type: 'pret' };
+    const message = lireMessageCarte(event.nativeEvent.data);
+    if (!message) return;
     if (message.type === 'pret') setPrete(true);
     else onMessage(message);
+  };
+
+  // La WebView n'affiche que la carte : tout autre lien (attributions…) s'ouvre dans le navigateur
+  const autoriserNavigation = ({ url }: ShouldStartLoadRequest) => {
+    if (url === URL_CARTE || url.startsWith('about:')) return true;
+    if (/^https?:\/\//.test(url)) Linking.openURL(url).catch(() => {});
+    return false;
   };
 
   return (
     <WebView
       ref={webview}
-      source={{ html, baseUrl: 'https://loompath.app/' }}
+      source={{ html, baseUrl: URL_CARTE }}
       originWhitelist={['*']}
+      onShouldStartLoadWithRequest={autoriserNavigation}
       onMessage={recevoir}
       style={styles.carte}
       containerStyle={styles.carte}

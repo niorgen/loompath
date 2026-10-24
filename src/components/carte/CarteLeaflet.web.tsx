@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { construireHtmlCarte, type DonneesCarte, type MessageCarte } from './carteHtml';
+import { construireHtmlCarte, lireMessageCarte, type DonneesCarte, type MessageCarte } from './carteHtml';
 
 type Props = {
   donnees: DonneesCarte;
@@ -20,8 +20,9 @@ export function CarteLeaflet({ donnees, margeBas, apercu, onMessage }: Props) {
 
   useEffect(() => {
     const recevoir = (event: MessageEvent) => {
-      if (event.source !== iframe.current?.contentWindow || typeof event.data !== 'string') return;
-      const message = JSON.parse(event.data) as MessageCarte | { type: 'pret' };
+      if (event.source !== iframe.current?.contentWindow) return;
+      const message = lireMessageCarte(event.data);
+      if (!message) return;
       if (message.type === 'pret') setPrete(true);
       else onMessage(message);
     };
