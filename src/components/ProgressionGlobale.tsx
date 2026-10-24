@@ -18,7 +18,9 @@ export function ProgressionGlobale({ obtenues, total }: Props) {
       accessible
       accessibilityRole="progressbar"
       accessibilityLabel={`${obtenues} prouesses obtenues sur ${total}`}
-      accessibilityValue={{ min: 0, max: total, now: obtenues }}
+      aria-valuemin={0}
+      aria-valuemax={total}
+      aria-valuenow={obtenues}
     >
       <View style={styles.stats}>
         <Text style={styles.pourcentage}>{Math.round(ratio * 100)} %</Text>

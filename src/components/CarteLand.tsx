@@ -43,7 +43,7 @@ export function CarteLand({ nom, obtenues, total, onPress }: Props) {
         )}
       </View>
       <View style={styles.progression}>
-        <View style={styles.jauge} accessibilityRole="progressbar" accessibilityValue={{ min: 0, max: total, now: obtenues }}>
+        <View style={styles.jauge} accessibilityRole="progressbar" aria-valuemin={0} aria-valuemax={total} aria-valuenow={obtenues}>
           <View style={[styles.atteinte, { width: `${ratio * 100}%` }]} />
         </View>
         <Text style={styles.niveau}>{niveau}</Text>

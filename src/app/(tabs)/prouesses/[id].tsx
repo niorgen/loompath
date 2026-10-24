@@ -22,6 +22,7 @@ import {
   type Prouesse,
   type TypeProuesse,
 } from '@/data';
+import { useTitrePage } from '@/hooks/useTitrePage';
 import { useCarnet, useProuesses } from '@/state/validations';
 import { colors, fonts } from '@/theme';
 
@@ -44,6 +45,7 @@ export default function DetailProuessesScreen() {
     [parc, land, prouesses, carnet],
   );
   const detail = categories.find((c) => c.id === id);
+  useTitrePage(detail?.nom ?? 'Prouesses');
   const [recherche, setRecherche] = useState('');
   const trouvees = useMemo(() => rechercherProuesses(detail?.prouesses ?? [], recherche), [detail, recherche]);
 

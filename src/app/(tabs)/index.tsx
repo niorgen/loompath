@@ -16,6 +16,7 @@ import { StatCards } from '@/components/StatCards';
 import { calculerStats, construireCarnet, TYPE_LABELS } from '@/data';
 import { useLandDuJoueur, usePositionJoueur } from '@/hooks/usePositionJoueur';
 import { formatDistance, useProuessesProches } from '@/hooks/useProuessesProches';
+import { useTitrePage } from '@/hooks/useTitrePage';
 import { useProfil } from '@/state/profil';
 import { useCarnet, useProuesses } from '@/state/validations';
 
@@ -26,6 +27,7 @@ const ouvrirProuesse = (id: string) => router.push(`/prouesse/${id}`);
 // Avec position : mini-carte des prouesses proches, récemment obtenus, catégories du land
 // où se trouve le joueur, puis les prouesses à proximité.
 export default function JournalScreen() {
+  useTitrePage('Journal');
   const insets = useSafeAreaInsets();
   const { position, refusee, autoriser } = usePositionJoueur();
   const land = useLandDuJoueur(position);

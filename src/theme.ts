@@ -24,7 +24,8 @@ export const colors = {
   textNavInactive: '#a8aed2',
   textOnLight: '#17203a',
   accent: '#cab5ff',
-  surtitre: '#4E97DE',
+  // #4E97DE éclairci : 4,5:1 minimum sur le halo violet du haut des écrans (RGAA 3.2)
+  surtitre: '#6AACEB',
   erreur: '#ef7d9a',
   // Boutons ronds (précédent, menu) : pastille opaque bordée
   surfaceBouton: '#161D42',
@@ -81,7 +82,14 @@ export const shadows = {
   nav: '0px 10px 12px 0px rgba(2,6,23,0.48)',
 } as const;
 
-// Champs de saisie : pas de contour de focus du navigateur (web), la bordure du champ porte l'état actif.
+// Champs de saisie : pas de contour de focus du navigateur (web), qui dessinerait un rectangle dans le champ.
 // « none » n'est pas typé par React Native mais est transmis tel quel par react-native-web.
 export const sansContourWeb: TextStyle =
   Platform.OS === 'web' ? ({ outlineStyle: 'none' } as unknown as TextStyle) : {};
+
+// À la place, anneau lavande autour du champ entier quand il a le focus (focus visible, RGAA 10.7)
+// (sans annotation de type : l'objet sert aussi bien à un champ de texte qu'à une vue)
+export const anneauFocusWeb =
+  Platform.OS === 'web'
+    ? { outlineStyle: 'solid' as const, outlineWidth: 2, outlineColor: colors.accent, outlineOffset: 2 }
+    : {};

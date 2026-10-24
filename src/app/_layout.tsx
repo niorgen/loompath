@@ -5,6 +5,7 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useState } from 'react';
+import { Platform } from 'react-native';
 
 import { SplashAnime } from '@/components/SplashAnime';
 import { useProfil } from '@/state/profil';
@@ -14,6 +15,10 @@ import { colors } from '@/theme';
 // puis le splash animé prend le relais jusqu'à ce que l'app soit prête
 SplashScreen.preventAutoHideAsync();
 SplashScreen.setOptions({ duration: 300, fade: true });
+
+// Version web : l'app est en français (le gabarit HTML d'Expo déclare « en »), pour la prononciation
+// des lecteurs d'écran (RGAA 8.3)
+if (Platform.OS === 'web' && typeof document !== 'undefined') document.documentElement.lang = 'fr';
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({ Inter_400Regular, Inter_700Bold, Inter_800ExtraBold, Lora_700Bold });

@@ -1,7 +1,8 @@
 import { Image } from 'expo-image';
-import { Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { AccessibilityInfo, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { colors, fonts, radius, sansContourWeb } from '@/theme';
+import { anneauFocusWeb, colors, fonts, radius, sansContourWeb } from '@/theme';
 
 type Props = {
   value: string;
@@ -15,9 +16,17 @@ type Props = {
 export function SearchField({ value, onChangeText, placeholder = 'Rechercher une prouesse…', erreur }: Props) {
   const rempli = value.length > 0;
   const enErreur = rempli && erreur;
+  const [focus, setFocus] = useState(false);
+
+  // « Aucun résultat » annoncé au lecteur d'écran (RGAA 7.5) : iOS n'a pas de zone live
+  useEffect(() => {
+    if (enErreur && Platform.OS === 'ios') AccessibilityInfo.announceForAccessibility(AUCUN_RESULTAT);
+  }, [enErreur]);
 
   return (
-    <View style={[styles.field, enErreur ? styles.fieldErreur : rempli && styles.fieldRempli]}>
+    <View
+      style={[styles.field, enErreur ? styles.fieldErreur : rempli && styles.fieldRempli, focus && anneauFocusWeb]}
+    >
       <Image
         source={require('../../assets/icons/search.svg')}
         style={styles.icon}
@@ -34,6 +43,8 @@ export function SearchField({ value, onChangeText, placeholder = 'Rechercher une
         returnKeyType="search"
         autoCorrect={false}
         accessibilityLabel={placeholder}
+        onFocus={() => setFocus(true)}
+        onBlur={() => setFocus(false)}
       />
       {rempli && !enErreur ? (
         <Pressable
@@ -45,9 +56,15 @@ export function SearchField({ value, onChangeText, placeholder = 'Rechercher une
           <Image source={require('../../assets/icons/circle-x.svg')} style={styles.effacer} contentFit="contain" />
         </Pressable>
       ) : null}
+      {/* Zone live (Android, web) : son texte est lu dès qu'il apparaît, sans être affiché */}
+      <View aria-live="polite" style={styles.masque}>
+        {enErreur ? <Text>{AUCUN_RESULTAT}</Text> : null}
+      </View>
     </View>
   );
 }
+
+const AUCUN_RESULTAT = 'Aucun résultat';
 
 const styles = StyleSheet.create({
   field: {
@@ -91,5 +108,11 @@ const styles = StyleSheet.create({
   effacer: {
     width: 16,
     height: 16,
+  },
+  masque: {
+    position: 'absolute',
+    width: 1,
+    height: 1,
+    overflow: 'hidden',
   },
 });

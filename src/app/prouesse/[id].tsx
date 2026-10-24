@@ -14,6 +14,7 @@ import { HeaderTitle } from '@/components/HeaderTitle';
 import { Trace, TRACES } from '@/components/Picto';
 import { TYPE_LABELS } from '@/data';
 import { useSourcePhoto } from '@/hooks/useSourcePhoto';
+import { useTitrePage } from '@/hooks/useTitrePage';
 import { supprimerValidation, useProuesses, validerProuesse } from '@/state/validations';
 import { colors, fonts, normalLineHeight, radius } from '@/theme';
 
@@ -21,6 +22,7 @@ export default function ProuesseScreen() {
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
   const prouesse = useProuesses().find((p) => p.id === id);
+  useTitrePage(prouesse?.titre ?? 'Prouesse');
   const { source, onError } = useSourcePhoto(prouesse?.photoUri, prouesse?.miniature);
   const [enCours, setEnCours] = useState(false);
   const [menuOuvert, setMenuOuvert] = useState(false);

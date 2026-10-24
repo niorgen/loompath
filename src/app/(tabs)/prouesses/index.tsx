@@ -9,10 +9,12 @@ import { NAV_HEIGHT } from '@/components/NavigationMenu';
 import { ResultatsProuesses } from '@/components/ResultatsProuesses';
 import { SearchField } from '@/components/SearchField';
 import { estResort, rechercherCarnet, rechercherProuesses } from '@/data';
+import { useTitrePage } from '@/hooks/useTitrePage';
 import { useCarnet, useProuesses } from '@/state/validations';
 import { colors, fonts } from '@/theme';
 
 export default function CarnetScreen() {
+  useTitrePage('Prouesses');
   const insets = useSafeAreaInsets();
   const [recherche, setRecherche] = useState('');
   const carnet = useCarnet();

@@ -18,6 +18,7 @@ import {
 } from '@/components/onboarding/Scenes';
 import { Trace, TRACES } from '@/components/Picto';
 import { PICTOS } from '@/data/pictos';
+import { useTitrePage } from '@/hooks/useTitrePage';
 import { definirNom, nomValide, terminerIntroduction, useProfil } from '@/state/profil';
 import { colors, fonts, illustration, normalLineHeight } from '@/theme';
 
@@ -31,6 +32,7 @@ const JAUNE = PICTOS.Secret.couleur;
 const VERT = PICTOS['Point photo'].couleur;
 
 export default function OnboardingScreen() {
+  useTitrePage('Introduction');
   const insets = useSafeAreaInsets();
   const profil = useProfil();
   const [etape, setEtape] = useState(0);

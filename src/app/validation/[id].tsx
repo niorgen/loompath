@@ -22,6 +22,7 @@ import { Etincelle, Picto, pictoDe, Trace, TRACES } from '@/components/Picto';
 import { calculerStats, estLocalisee, POINTS_PAR_PROUESSE, TYPE_LABELS } from '@/data';
 import { PICTOS } from '@/data/pictos';
 import { useSourcePhoto } from '@/hooks/useSourcePhoto';
+import { useTitrePage } from '@/hooks/useTitrePage';
 import { useProfil } from '@/state/profil';
 import { useCarnet, useProuesses } from '@/state/validations';
 import { colors, fonts, illustration, normalLineHeight, radius } from '@/theme';
@@ -170,6 +171,7 @@ function Jauge({ obtenues, total }: { obtenues: number; total: number }) {
 }
 
 export default function ValidationScreen() {
+  useTitrePage('Prouesse validée');
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { nom } = useProfil();

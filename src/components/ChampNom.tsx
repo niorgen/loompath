@@ -1,7 +1,8 @@
+import { useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { NOM_MAX, nomValide } from '@/state/profil';
-import { colors, fonts, normalLineHeight, radius, sansContourWeb } from '@/theme';
+import { anneauFocusWeb, colors, fonts, normalLineHeight, radius, sansContourWeb } from '@/theme';
 
 type Props = {
   valeur: string;
@@ -12,6 +13,7 @@ type Props = {
 
 // Saisie du nom du joueur (2 à 20 caractères), avec compteur
 export function ChampNom({ valeur, onChange, onValider, autoFocus }: Props) {
+  const [focus, setFocus] = useState(false);
   return (
     <View style={styles.champ}>
       <Text style={styles.label} nativeID="libelle-nom">
@@ -29,7 +31,9 @@ export function ChampNom({ valeur, onChange, onValider, autoFocus }: Props) {
         placeholder="Votre pseudo"
         placeholderTextColor={colors.textSecondary}
         accessibilityLabelledBy="libelle-nom"
-        style={[styles.saisie, nomValide(valeur) && styles.saisieValide]}
+        onFocus={() => setFocus(true)}
+        onBlur={() => setFocus(false)}
+        style={[styles.saisie, nomValide(valeur) && styles.saisieValide, focus && anneauFocusWeb]}
       />
       <View style={styles.aide}>
         <Text style={styles.texteAide}>Visible uniquement par vous, sauf partage</Text>

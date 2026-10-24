@@ -36,7 +36,8 @@ const styles = StyleSheet.create({
     letterSpacing: 1.5,
     color: colors.textOnLight,
   },
+  // Texte sombre sur le bleu : 6,5:1 (le blanc ne faisait que 3:1, RGAA 3.2)
   libelleAction: {
-    color: colors.textOnAction,
+    color: colors.background,
   },
 });

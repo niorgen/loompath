@@ -8,10 +8,12 @@ import type { DonneesCarte, MessageCarte } from '@/components/carte/carteHtml';
 import { Degrade } from '@/components/Degrade';
 import { NAV_HEIGHT } from '@/components/NavigationMenu';
 import { estLocalisee } from '@/data';
+import { useTitrePage } from '@/hooks/useTitrePage';
 import { useProuesses } from '@/state/validations';
 import { colors } from '@/theme';
 
 export default function CartesScreen() {
+  useTitrePage('Cartes');
   const insets = useSafeAreaInsets();
   const prouesses = useProuesses();
   // « Voir sur la carte » après une validation : plan centré sur la prouesse

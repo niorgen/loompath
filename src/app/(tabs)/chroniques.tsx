@@ -19,6 +19,7 @@ import {
   type EtapeChroniques,
   type Prouesse,
 } from '@/data';
+import { useTitrePage } from '@/hooks/useTitrePage';
 import { useProuesses } from '@/state/validations';
 import { colors, fonts, normalLineHeight } from '@/theme';
 
@@ -65,6 +66,7 @@ function SouvenirsDuJour({ prouesses }: { prouesses: Prouesse[] }) {
 }
 
 export default function ChroniquesScreen() {
+  useTitrePage('Chroniques');
   const insets = useSafeAreaInsets();
   const prouesses = useProuesses();
   const [vue, setVue] = useState<Vue>('timeline');

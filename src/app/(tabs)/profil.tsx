@@ -14,6 +14,7 @@ import { Picto, Trace, TRACES } from '@/components/Picto';
 import { ChiffresCards, StatCards } from '@/components/StatCards';
 import { calculerStats, compterVisites } from '@/data';
 import { useAutorisations, type Autorisation } from '@/hooks/useAutorisations';
+import { useTitrePage } from '@/hooks/useTitrePage';
 import { definirNom, effacerProfil, nomValide, revoirIntroduction, useProfil } from '@/state/profil';
 import { effacerValidations, useProuesses } from '@/state/validations';
 import { colors, fonts, normalLineHeight } from '@/theme';
@@ -25,6 +26,7 @@ const ETATS = {
 } as const;
 
 export default function ProfilScreen() {
+  useTitrePage('Profil');
   const insets = useSafeAreaInsets();
   const { nom } = useProfil();
   const prouesses = useProuesses();
