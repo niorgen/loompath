@@ -183,12 +183,15 @@ function LigneAutorisation({ titre, usage, icone, autorisation }: LigneAutorisat
       onPress={action ? demander : undefined}
       accessibilityLabel={`${titre}, ${ETATS[etat]}${action ? `, ${action}` : ''}`}
       icone={icone}
-      trailing={action ? <Text style={styles.lien}>{action}</Text> : null}
+      trailing={
+        // Statut et action à droite, centrés verticalement dans la ligne
+        <View style={styles.finLigne}>
+          <Text style={[styles.etat, etat === 'autorisee' && styles.etatAutorise]}>{ETATS[etat]}</Text>
+          {action ? <Text style={styles.lien}>{action}</Text> : null}
+        </View>
+      }
     >
-      <View style={styles.enteteLigne}>
-        <Text style={styles.titreLigne}>{titre}</Text>
-        <Text style={[styles.etat, etat === 'autorisee' && styles.etatAutorise]}>{ETATS[etat]}</Text>
-      </View>
+      <Text style={styles.titreLigne}>{titre}</Text>
       <Text style={styles.texteDiscret}>{detail}</Text>
     </ListRow>
   );
@@ -237,11 +240,10 @@ const styles = StyleSheet.create({
     lineHeight: 23 * 1.1,
     color: colors.textPrimaryAlt,
   },
-  enteteLigne: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    justifyContent: 'space-between',
-    gap: 8,
+  finLigne: {
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+    gap: 4,
   },
   titreLigne: {
     fontFamily: fonts.loraBold,
