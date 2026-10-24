@@ -85,18 +85,22 @@ const RESORT = ['Hôtels', 'Disney Village'];
 export const estResort = (parc: string) => RESORT.includes(parc);
 
 // Une prouesse appartient à trois catégories à la fois : son parc, son land et son type
-// (land et type peuvent manquer, ex. les prouesses d'hôtel sans type)
+// (land et type peuvent manquer, ex. les prouesses d'hôtel sans type), plus certains thèmes
 export type NiveauCategorie = 'parc' | 'land' | 'type';
 const ORDRE_NIVEAUX: NiveauCategorie[] = ['parc', 'land', 'type'];
 
 const slug = (s: string) =>
   s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
+// Thèmes du CSV qui forment aussi une catégorie, en plus du type (ex. les plantes, de type Secret)
+const THEMES_CATEGORIES = ['Plantes'];
+
 function categoriesDe(p: ProuesseSource) {
   return [
     { niveau: 'parc' as const, nom: p.parc },
     ...(p.land ? [{ niveau: 'land' as const, nom: p.land }] : []),
     ...(p.type ? [{ niveau: 'type' as const, nom: TYPE_LABELS[p.type].pluriel }] : []),
+    ...(p.themes ?? []).filter((t) => THEMES_CATEGORIES.includes(t)).map((t) => ({ niveau: 'type' as const, nom: t })),
   ].map((c) => ({ ...c, id: `${c.niveau}-${slug(c.nom)}` }));
 }
 
