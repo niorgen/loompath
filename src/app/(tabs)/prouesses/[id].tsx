@@ -11,7 +11,16 @@ import { ProgressionGlobale } from '@/components/ProgressionGlobale';
 import { ProgressionRow } from '@/components/ProgressionRow';
 import { ResultatsProuesses } from '@/components/ResultatsProuesses';
 import { SearchField } from '@/components/SearchField';
-import { construireCarnet, estResort, rechercherCarnet, rechercherProuesses, type Categorie } from '@/data';
+import {
+  construireCarnet,
+  estResort,
+  rechercherCarnet,
+  rechercherProuesses,
+  TYPE_LABELS,
+  type Categorie,
+  type Prouesse,
+  type TypeProuesse,
+} from '@/data';
 import { useCarnet, useProuesses } from '@/state/validations';
 import { colors, fonts } from '@/theme';
 
@@ -72,7 +81,8 @@ export default function DetailProuessesScreen() {
   return (
     <ScrollView
       style={styles.screen}
-      contentContainerStyle={contenu}
+      // Les sections d'un land s'espacent comme celles d'un parc
+      contentContainerStyle={[contenu, detail?.niveau === 'land' && styles.zoneSections]}
       keyboardDismissMode="on-drag"
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
@@ -88,23 +98,49 @@ export default function DetailProuessesScreen() {
       ) : null}
       {detail && !trouvees.length ? (
         <Text style={styles.vide}>Aucune prouesse ne correspond à « {recherche.trim()} ».</Text>
+      ) : detail?.niveau === 'land' ? (
+        // Page d'un land : prouesses rangées par catégorie, chacune sous son titre
+        parCategorie(trouvees).map(({ titre, prouesses }) => (
+          <View key={titre} style={styles.section}>
+            <Text style={styles.titreSection} accessibilityRole="header">
+              {titre}
+            </Text>
+            <ListeProuesses prouesses={prouesses} />
+          </View>
+        ))
       ) : detail ? (
-        <View style={styles.liste}>
-          {trouvees.map((prouesse) => (
-            <IndiceRow
-              key={prouesse.id}
-              titre={prouesse.titre}
-              indice={prouesse.sousTitre}
-              obtenue={prouesse.obtenue}
-              onPress={() => router.push(`/prouesse/${prouesse.id}`)}
-            />
-          ))}
-        </View>
+        <ListeProuesses prouesses={trouvees} />
       ) : (
         <Text style={styles.vide}>Cette catégorie est introuvable.</Text>
       )}
     </ScrollView>
   );
+}
+
+function ListeProuesses({ prouesses }: { prouesses: Prouesse[] }) {
+  return (
+    <View style={styles.liste}>
+      {prouesses.map((prouesse) => (
+        <IndiceRow
+          key={prouesse.id}
+          titre={prouesse.titre}
+          indice={prouesse.sousTitre}
+          obtenue={prouesse.obtenue}
+          onPress={() => router.push(`/prouesse/${prouesse.id}`)}
+        />
+      ))}
+    </View>
+  );
+}
+
+// Regroupe les prouesses par type, dans l'ordre des catégories ; celles sans type finissent en « Autres »
+function parCategorie(prouesses: Prouesse[]) {
+  const groupes = (Object.keys(TYPE_LABELS) as TypeProuesse[]).map((type) => ({
+    titre: TYPE_LABELS[type].pluriel,
+    prouesses: prouesses.filter((p) => p.type === type),
+  }));
+  groupes.push({ titre: 'Autres', prouesses: prouesses.filter((p) => !p.type) });
+  return groupes.filter((g) => g.prouesses.length);
 }
 
 type EcranParcProps = {
@@ -131,7 +167,7 @@ function EcranParc({ parc, entete, contenu }: EcranParcProps) {
   return (
     <ScrollView
       style={styles.screen}
-      contentContainerStyle={[contenu, styles.zoneParc]}
+      contentContainerStyle={[contenu, styles.zoneSections]}
       keyboardDismissMode="on-drag"
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
@@ -204,7 +240,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     gap: 12,
   },
-  zoneParc: {
+  zoneSections: {
     gap: 24,
   },
   section: {
