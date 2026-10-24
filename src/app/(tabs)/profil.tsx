@@ -194,7 +194,6 @@ function LigneAutorisation({ titre, usage, icone, autorisation }: LigneAutorisat
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   contenu: {
     paddingHorizontal: 16,

@@ -42,6 +42,16 @@ export const illustration = {
   inactif: '#8F96C4',
 } as const;
 
+// Dégradés du canvas « Design » (splash, écrans, boutons, jauges)
+export const degrades = {
+  /** Fond vertical des écrans, du haut vers le bas */
+  nuit: ['#1A1446', '#0D1236', '#070B1C'],
+  /** Halo violet posé en haut du fond */
+  halo: '#3A2A7A',
+  /** Accent horizontal : boutons principaux, jauges, onglet actif */
+  accent: ['#C9B6FF', '#F5B8D8'],
+} as const;
+
 export const radius = {
   sm: 8,
   md: 12,

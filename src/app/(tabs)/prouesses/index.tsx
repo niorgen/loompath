@@ -65,7 +65,6 @@ export default function CarnetScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   contenu: {
     paddingHorizontal: 16,

@@ -1,6 +1,7 @@
 import { Image } from 'expo-image';
 import { StyleSheet, Text, View } from 'react-native';
 
+import { DegradeAccent } from '@/components/Fonds';
 import { ListRow } from '@/components/ListRow';
 import { Picto, pictoDe } from '@/components/Picto';
 import { colors, fonts, normalLineHeight, radius } from '@/theme';
@@ -39,7 +40,9 @@ export function ProgressionRow({ titre, obtenues, total, onPress }: Props) {
           accessibilityRole="progressbar"
           accessibilityValue={{ min: 0, max: total, now: obtenues }}
         >
-          <View style={[styles.atteinte, { width: `${ratio * 100}%` }]} />
+          <View style={[styles.atteinte, { width: `${ratio * 100}%` }]}>
+            <DegradeAccent />
+          </View>
         </View>
         <Text style={styles.niveau}>{niveau}</Text>
       </View>
@@ -65,7 +68,7 @@ const styles = StyleSheet.create({
   },
   atteinte: {
     height: 6,
-    backgroundColor: colors.accent,
+    overflow: 'hidden',
     borderRadius: radius.pill,
   },
   niveau: {

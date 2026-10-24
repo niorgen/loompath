@@ -9,6 +9,7 @@ import { Badge } from '@/components/Badge';
 import { BoutonAction } from '@/components/BoutonAction';
 import { choisirSourcePhoto } from '@/components/choisirSourcePhoto';
 import { confirmer } from '@/components/confirmer';
+import { FondNuit } from '@/components/Fonds';
 import { HeaderTitle } from '@/components/HeaderTitle';
 import { TYPE_LABELS } from '@/data';
 import { useSourcePhoto } from '@/hooks/useSourcePhoto';
@@ -86,6 +87,7 @@ export default function ProuesseScreen() {
 
   return (
     <View style={styles.screen}>
+      <FondNuit />
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Photo de validation pleine largeur, sous la barre de statut */}
         <View style={styles.photo}>

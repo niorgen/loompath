@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, Text } from 'react-native';
 
+import { DegradeAccent } from '@/components/Fonds';
 import { Trace, TRACES } from '@/components/Picto';
 import { colors, fonts, illustration, normalLineHeight, radius } from '@/theme';
 
@@ -13,7 +14,7 @@ type Props = {
   fleche?: boolean;
 };
 
-// Grand bouton lavande de l'introduction et de la validation (artifact « Design »)
+// Grand bouton dégradé lavande → rose de l'introduction et de la validation (artifact « Design »)
 export function BoutonPrincipal({ libelle, onPress, disabled, icone, fleche }: Props) {
   return (
     <Pressable
@@ -23,6 +24,7 @@ export function BoutonPrincipal({ libelle, onPress, disabled, icone, fleche }: P
       accessibilityState={{ disabled }}
       style={({ pressed }) => [styles.bouton, disabled && styles.boutonInactif, pressed && { opacity: 0.85 }]}
     >
+      {!disabled ? <DegradeAccent /> : null}
       {icone && !disabled ? <Trace trace={icone} couleur={colors.background} taille={20} epaisseur={2} /> : null}
       <Text style={[styles.libelle, disabled && styles.libelleInactif]}>{libelle}</Text>
       {fleche && !disabled ? <Trace trace={TRACES.fleche} couleur={colors.background} taille={20} epaisseur={2} /> : null}
@@ -41,6 +43,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     backgroundColor: colors.accentSecondary,
     borderRadius: radius.pill,
+    overflow: 'hidden',
   },
   boutonInactif: {
     backgroundColor: illustration.pastille,

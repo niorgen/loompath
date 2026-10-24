@@ -2,6 +2,7 @@ import { Image, type ImageSource } from 'expo-image';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { DegradeAccent } from '@/components/Fonds';
 import { colors, fonts, normalLineHeight, radius, shadows } from '@/theme';
 
 export type Destination = 'journal' | 'prouesse' | 'cartes' | 'chroniques' | 'profil';
@@ -39,7 +40,8 @@ export function NavigationMenu({ actif, onSelect }: Props) {
               accessibilityLabel={label}
               style={styles.destination}
             >
-              <View style={[styles.iconPill, selected && styles.iconPillActive]}>
+              <View style={styles.iconPill}>
+                {selected ? <DegradeAccent /> : null}
                 <Image
                   source={icon}
                   style={{ width: size, height: size }}
@@ -93,9 +95,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: radius.pill,
-  },
-  iconPillActive: {
-    backgroundColor: colors.accentSecondary,
+    overflow: 'hidden',
   },
   label: {
     fontFamily: fonts.interRegular,

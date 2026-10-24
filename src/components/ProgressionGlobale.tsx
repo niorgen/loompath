@@ -1,5 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 
+import { DegradeAccent } from '@/components/Fonds';
 import { colors, fonts, normalLineHeight, radius } from '@/theme';
 
 type Props = {
@@ -26,7 +27,9 @@ export function ProgressionGlobale({ obtenues, total }: Props) {
         </Text>
       </View>
       <View style={styles.jauge}>
-        <View style={[styles.atteinte, { width: `${ratio * 100}%` }]} />
+        <View style={[styles.atteinte, { width: `${ratio * 100}%` }]}>
+          <DegradeAccent />
+        </View>
       </View>
     </View>
   );
@@ -64,7 +67,7 @@ const styles = StyleSheet.create({
   },
   atteinte: {
     height: 6,
-    backgroundColor: colors.accent,
+    overflow: 'hidden',
     borderRadius: radius.pill,
   },
 });

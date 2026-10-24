@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Avatar } from '@/components/Avatar';
 import { BoutonPrincipal } from '@/components/BoutonPrincipal';
 import { ChampNom } from '@/components/ChampNom';
+import { FondNuit } from '@/components/Fonds';
 import {
   SceneBienvenue,
   SceneChoisir,
@@ -188,6 +189,7 @@ export default function OnboardingScreen() {
 
   return (
     <KeyboardAvoidingView style={styles.screen} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <FondNuit variante="scene" />
       <View style={[styles.cadre, { paddingTop: insets.top + 12, paddingBottom: insets.bottom + 24 }]}>
         <View style={styles.barre}>
           {etape > 0 ? (

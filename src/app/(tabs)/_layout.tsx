@@ -1,6 +1,7 @@
 import { router, type Href } from 'expo-router';
 import { Tabs, type BottomTabBarProps } from 'expo-router/tabs';
 
+import { avecFondNuit } from '@/components/Fonds';
 import { NavigationMenu, type Destination } from '@/components/NavigationMenu';
 import { colors } from '@/theme';
 
@@ -39,6 +40,7 @@ export default function TabsLayout() {
     <Tabs
       tabBar={(props) => <TabBar {...props} />}
       screenOptions={{ headerShown: false, sceneStyle: { backgroundColor: colors.background } }}
+      screenLayout={avecFondNuit}
     >
       <Tabs.Screen name="index" />
       <Tabs.Screen name="prouesses" />

@@ -18,7 +18,6 @@ import { useLandDuJoueur, usePositionJoueur } from '@/hooks/usePositionJoueur';
 import { formatDistance, useProuessesProches } from '@/hooks/useProuessesProches';
 import { useProfil } from '@/state/profil';
 import { useCarnet, useProuesses } from '@/state/validations';
-import { colors } from '@/theme';
 
 const ouvrirProuesse = (id: string) => router.push(`/prouesse/${id}`);
 
@@ -176,7 +175,6 @@ export default function JournalScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   zoneCentrale: {
     paddingHorizontal: 16,

@@ -189,7 +189,6 @@ function EcranParc({ parc, entete, contenu }: EcranParcProps) {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   zoneCentrale: {
     paddingHorizontal: 16,

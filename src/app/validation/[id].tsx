@@ -17,6 +17,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BoutonPrincipal } from '@/components/BoutonPrincipal';
+import { DegradeAccent, FondNuit } from '@/components/Fonds';
 import { Etincelle, Picto, pictoDe, Trace, TRACES } from '@/components/Picto';
 import { calculerStats, estLocalisee, POINTS_PAR_PROUESSE, TYPE_LABELS } from '@/data';
 import { PICTOS } from '@/data/pictos';
@@ -161,7 +162,9 @@ function Jauge({ obtenues, total }: { obtenues: number; total: number }) {
           { width: `${(obtenues / total) * 100}%` },
           { transform: [{ scaleX: v.interpolate({ inputRange: [0, 1], outputRange: [depart, 1] }) }] },
         ]}
-      />
+      >
+        <DegradeAccent />
+      </Animated.View>
     </View>
   );
 }
@@ -196,6 +199,7 @@ export default function ValidationScreen() {
 
   return (
     <View style={styles.screen}>
+      <FondNuit variante="scene" />
       <ScrollView
         contentContainerStyle={[styles.contenu, { paddingTop: insets.top + 8, paddingBottom: insets.bottom + 24 }]}
         showsVerticalScrollIndicator={false}
@@ -476,7 +480,7 @@ const styles = StyleSheet.create({
   },
   remplissage: {
     height: '100%',
-    backgroundColor: colors.accentSecondary,
+    overflow: 'hidden',
     borderRadius: 4,
     transformOrigin: 'left',
   },

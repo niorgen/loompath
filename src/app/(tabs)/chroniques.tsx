@@ -162,7 +162,6 @@ export default function ChroniquesScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   contenu: {
     paddingHorizontal: 20,
