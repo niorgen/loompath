@@ -14,6 +14,7 @@ import { SearchField } from '@/components/SearchField';
 import {
   construireCarnet,
   estResort,
+  prouessesSource,
   rechercherCarnet,
   rechercherProuesses,
   TYPE_LABELS,
@@ -81,8 +82,8 @@ export default function DetailProuessesScreen() {
   return (
     <ScrollView
       style={styles.screen}
-      // Les sections d'un land s'espacent comme celles d'un parc
-      contentContainerStyle={[contenu, detail?.niveau === 'land' && styles.zoneSections]}
+      // Les sections (land, catégorie) s'espacent comme celles d'un parc
+      contentContainerStyle={[contenu, !!detail && styles.zoneSections]}
       keyboardDismissMode="on-drag"
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
@@ -98,9 +99,9 @@ export default function DetailProuessesScreen() {
       ) : null}
       {detail && !trouvees.length ? (
         <Text style={styles.vide}>Aucune prouesse ne correspond à « {recherche.trim()} ».</Text>
-      ) : detail?.niveau === 'land' ? (
-        // Page d'un land : prouesses rangées par catégorie, chacune sous son titre
-        parCategorie(trouvees).map(({ titre, prouesses }) => (
+      ) : detail?.niveau === 'land' || detail?.niveau === 'type' ? (
+        // Page d'un land : prouesses rangées par catégorie ; page d'une catégorie : par land ou hôtel
+        (detail.niveau === 'land' ? parCategorie(trouvees) : parLieu(trouvees)).map(({ titre, prouesses }) => (
           <View key={titre} style={styles.section}>
             <Text style={styles.titreSection} accessibilityRole="header">
               {titre}
@@ -141,6 +142,31 @@ function parCategorie(prouesses: Prouesse[]) {
   }));
   groupes.push({ titre: 'Autres', prouesses: prouesses.filter((p) => !p.type) });
   return groupes.filter((g) => g.prouesses.length);
+}
+
+// Regroupe les prouesses par land (ou hôtel) : parcs d'abord, resort ensuite, dans l'ordre des données ;
+// au sein d'un parc, lands par ordre alphabétique puis prouesses sans land sous le nom du parc
+function parLieu(prouesses: Prouesse[]) {
+  const ordreParcs = [...new Set(prouessesSource.map((p) => p.parc))];
+  const groupes = new Map<string, { titre: string; parc: string; land?: string; prouesses: Prouesse[] }>();
+  for (const prouesse of prouesses) {
+    const cle = `${prouesse.parc}|${prouesse.land ?? ''}`;
+    const groupe = groupes.get(cle) ?? {
+      titre: prouesse.land ?? prouesse.parc,
+      parc: prouesse.parc,
+      land: prouesse.land,
+      prouesses: [],
+    };
+    groupe.prouesses.push(prouesse);
+    groupes.set(cle, groupe);
+  }
+  const rang = (parc: string) => (estResort(parc) ? ordreParcs.length : 0) + ordreParcs.indexOf(parc);
+  return [...groupes.values()].sort(
+    (a, b) =>
+      rang(a.parc) - rang(b.parc) ||
+      Number(!a.land) - Number(!b.land) ||
+      (a.land ?? '').localeCompare(b.land ?? '', 'fr'),
+  );
 }
 
 type EcranParcProps = {
