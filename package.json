@@ -34,6 +34,10 @@
     "typescript": "~6.0.3"
   },
   "scripts": {
+    "prestart": "npm run data",
+    "preandroid": "npm run data",
+    "preios": "npm run data",
+    "preweb": "npm run data",
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",

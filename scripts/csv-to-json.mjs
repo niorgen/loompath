@@ -1,5 +1,5 @@
 // Convertit src/data/prouesses.csv en src/data/prouesses.json
-// Usage : npm run data (à relancer après chaque modification du CSV)
+// Usage : npm run data (lancé automatiquement par npm start, web, android et ios)
 import { readFileSync, writeFileSync } from "node:fs";
 
 const SRC = new URL("../src/data/prouesses.csv", import.meta.url);
