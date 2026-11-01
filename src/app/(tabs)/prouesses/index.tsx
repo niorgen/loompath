@@ -8,7 +8,9 @@ import { HeaderTitle } from '@/components/HeaderTitle';
 import { NAV_HEIGHT } from '@/components/NavigationMenu';
 import { ResultatsProuesses } from '@/components/ResultatsProuesses';
 import { SearchField } from '@/components/SearchField';
+import { Squelette } from '@/components/Squelette';
 import { estResort, rechercherCarnet, rechercherProuesses } from '@/data';
+import { useAffichageDiffere } from '@/hooks/useAffichageDiffere';
 import { useTitrePage } from '@/hooks/useTitrePage';
 import { useCarnet, useProuesses } from '@/state/validations';
 import { colors, fonts } from '@/theme';
@@ -17,6 +19,8 @@ export default function CarnetScreen() {
   useTitrePage('Prouesses');
   const insets = useSafeAreaInsets();
   const [recherche, setRecherche] = useState('');
+  // En-tête et recherche s'affichent tout de suite ; la grille, longue à monter, après son squelette
+  const pret = useAffichageDiffere();
   const carnet = useCarnet();
   const prouesses = useProuesses();
   const resultats = useMemo(() => rechercherCarnet(carnet, recherche), [carnet, recherche]);
@@ -33,8 +37,9 @@ export default function CarnetScreen() {
     { titre: 'Resort', categories: resultats.filter((c) => c.niveau === 'parc' && estResort(c.nom)) },
     { titre: 'Lands', categories: enRecherche ? resultats.filter((c) => c.niveau === 'land') : [] },
     { titre: 'Catégories', categories: resultats.filter((c) => c.niveau === 'type') },
+    { titre: 'Univers', categories: resultats.filter((c) => c.niveau === 'univers') },
   ].filter((s) => s.categories.length);
-  const aucunResultat = !sections.length && !trouvees.length;
+  const aucunResultat = pret && !sections.length && !trouvees.length;
 
   return (
     <ScrollView
@@ -52,9 +57,14 @@ export default function CarnetScreen() {
         erreur={aucunResultat}
       />
 
-      <ResultatsProuesses prouesses={trouvees} />
+      {pret ? <ResultatsProuesses prouesses={trouvees} /> : null}
 
-      {sections.map((section) => (
+      {!pret ? (
+        // Parcs, Resort, Catégories, Univers : nombre de cartes proche de celui du carnet
+        <Squelette sections={[2, 2, 9, 8].map((nombre) => ({ forme: 'grille', nombre }))} />
+      ) : null}
+
+      {(pret ? sections : []).map((section) => (
         <View key={section.titre} style={styles.section}>
           <Text style={styles.titreSection} accessibilityRole="header">
             {section.titre}

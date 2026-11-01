@@ -1,12 +1,17 @@
-// Convertit src/data/prouesses.csv en src/data/prouesses.json
+// Convertit les CSV de src/data (prouesses, personnages, saison) en src/data/prouesses.json
 // Usage : npm run data (lancé automatiquement par npm start, web, android et ios)
 import { readFileSync, writeFileSync } from "node:fs";
 
-const SRC = new URL("../src/data/prouesses.csv", import.meta.url);
+// theme : thème ajouté à toutes les lignes du fichier (les prouesses de saison forment l'univers « Saisons »)
+const SOURCES = [
+  { nom: "prouesses.csv" },
+  { nom: "loompath-prouesses - Personnages.csv" },
+  { nom: "loompath-prouesses - Saison.csv", theme: "Saisons" },
+];
 const OUT = new URL("../src/data/prouesses.json", import.meta.url);
 
 // Seules les prouesses prêtes sont publiées dans l'app
-const STATUTS_RETENUS = new Set(["Validé"]);
+const STATUTS_RETENUS = new Set(["Terminé", "Validé"]);
 
 // Parsing CSV (gère les guillemets et "" échappés)
 function parseCSV(text) {
@@ -28,7 +33,9 @@ function parseCSV(text) {
   }
   if (field || row.length) { row.push(field); out.push(row); }
   const [header, ...data] = out.filter(r => r.length > 1);
-  return data.map(r => Object.fromEntries(header.map((h, i) => [h.replace(/^﻿/, "").trim(), (r[i] ?? "").trim()])));
+  // La première colonne est le statut, quel que soit son intitulé (« Statut », « village », « Terminé »…)
+  const colonnes = ["Statut", ...header.slice(1).map(h => h.trim())];
+  return data.map(r => Object.fromEntries(colonnes.map((h, i) => [h, (r[i] ?? "").trim()])));
 }
 
 // "48.866153, 2.77663" -> { latitude, longitude } (absent si vide ou invalide)
@@ -37,13 +44,15 @@ function coordonnees(brut) {
   return Number.isFinite(latitude) && Number.isFinite(longitude) ? { latitude, longitude } : {};
 }
 
-// Colonnes « Thème 4/5/6 » -> { themes: [...] } (absent si aucune n'est renseignée)
+// Colonnes « Thème 4/5/6 » et thème du fichier -> { themes: [...] } (absent si aucun n'est renseigné)
 function themes(l) {
-  const liste = ["Thème 4", "Thème 5", "Thème 6"].map(c => l[c]).filter(Boolean);
+  const liste = [...new Set(["Thème 4", "Thème 5", "Thème 6"].map(c => l[c]).concat(l.theme).filter(Boolean))];
   return liste.length ? { themes: liste } : {};
 }
 
-const lignes = parseCSV(readFileSync(SRC, "utf8"));
+const lignes = SOURCES.flatMap(({ nom, theme }) =>
+  parseCSV(readFileSync(new URL(`../src/data/${nom}`, import.meta.url), "utf8")).map(l => ({ ...l, theme })),
+);
 const prouesses = lignes
   .filter(l => STATUTS_RETENUS.has(l["Statut"]))
   .map(l => ({
@@ -59,7 +68,11 @@ const prouesses = lignes
     ...coordonnees(l["Coordonnées GPS"]),
   }));
 
-const TYPES_CONNUS = ["Attraction", "Spectacles", "Personnages", "Secret", "Point photo", "Mickeys cachés", "Chasse au trésor"];
+const ids = prouesses.map(p => p.id);
+const doublons = [...new Set(ids.filter((id, i) => ids.indexOf(id) !== i))];
+if (doublons.length) throw new Error(`ID(s) en double entre les CSV : ${doublons.join(", ")}`);
+
+const TYPES_CONNUS = ["Attraction", "Spectacles", "Personnages", "Secret", "Point photo", "Mickeys cachés", "Chasse au trésor", "Activités"];
 const types = new Set(prouesses.map(p => p.type).filter(Boolean));
 const inconnus = [...types].filter(t => !TYPES_CONNUS.includes(t));
 if (inconnus.length) throw new Error(`Type(s) inconnu(s) dans le CSV : ${inconnus.join(", ")}`);

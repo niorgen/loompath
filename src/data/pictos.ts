@@ -1,4 +1,4 @@
-// Généré depuis src/data/Pictos.dc.html (planche « Pictogrammes des tags »)
+// Généré depuis src/data/Pictos.dc.html (planche « Pictogrammes des tags ») et la planche « Pictos des univers »
 // Tracés 24×24 en trait (stroke-width 1.8) ; couleur propre aux types, lavande pour le reste
 export type Picto = { couleur: string; trace: string };
 
@@ -11,11 +11,21 @@ export const PICTOS: Record<string, Picto> = {
   'Spectacles': { couleur: '#FF9E8A', trace: "<circle cx='12' cy='12' r='1.5'/><path d='M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8'/>" },
   'Point photo': { couleur: '#9EE6D4', trace: "<path d='M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z'/><circle cx='12' cy='13' r='3.5'/>" },
   'Chasse au trésor': { couleur: '#E6D98F', trace: "<rect x='3' y='10' width='18' height='10' rx='2'/><path d='M3 10a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4'/><path d='M3 14h18'/><rect x='10.5' y='12.5' width='3' height='3.5' rx='1'/>" },
+  'Activités': { couleur: '#B6E3A1', trace: "<path d='M13 2l7 6-5 8-8-5z'/><path d='M13 2l2 14M7 11l13-3'/><path d='M10 13.5c-1 2 1 3-1 5s-2 3-1 4'/>" },
   // Thèmes
   'Festival Halloween': { couleur: '#C9B6FF', trace: "<path d='M12 7c-5 0-8 3-8 7s3 6 8 6 8-2 8-6-3-7-8-7z'/><path d='M12 7c-2 0-3 3-3 6.5S10 20 12 20s3-3 3-6.5S14 7 12 7z'/><path d='M12 7V4.5c0-.8.6-1.5 1.5-1.5'/>" },
   'Plantes': { couleur: '#C9B6FF', trace: "<path d='M5 19c0-9 6-14 15-14 0 9-5 15-14 15'/><path d='M5 19l8-8'/>" },
   'World Princess Week': { couleur: '#C9B6FF', trace: "<path d='M3 8l4 4 5-7 5 7 4-4-2 11H5z'/><path d='M5 19h14'/>" },
   'Fantasyland (thème)': { couleur: '#C9B6FF', trace: "<path d='M3 20 12 4l9 16'/><path d='M12 4v16'/><path d='M3 20h18'/><path d='M8 20l4-6 4 6'/>" },
+  // Univers des personnages
+  'Classiques Disney': { couleur: '#F5A3C7', trace: "<path d='M2 6h7a3 3 0 0 1 3 3v12a2.5 2.5 0 0 0-2.5-2.5H2z'/><path d='M22 6h-7a3 3 0 0 0-3 3v12a2.5 2.5 0 0 1 2.5-2.5H22z'/><path d='M17 1.5l.6 1.4 1.4.6-1.4.6-.6 1.4-.6-1.4-1.4-.6 1.4-.6z'/>" },
+  'Mickey et ses amis': { couleur: '#FFC98A', trace: "<path d='M9 18V5l11-2v13'/><circle cx='6.5' cy='18' r='2.5'/><circle cx='17.5' cy='16' r='2.5'/><path d='M9 9l11-2'/>" },
+  'Princesses Disney': { couleur: '#C9B6FF', trace: "<path d='M3 9l4 3.5L12 5l5 7.5L21 9l-2 10H5z'/><path d='M5 19h14'/><circle cx='12' cy='14.5' r='1.2'/>" },
+  'Méchants Disney': { couleur: '#9EE6D4', trace: "<path d='M12 8.2c-2-1.6-5.8-1.4-7.2 1.6-1.6 3.4-.4 8 2.6 10.6 1.5 1.3 3.1 1.2 4.6.5 1.5.7 3.1.8 4.6-.5 3-2.6 4.2-7.2 2.6-10.6-1.4-3-5.2-3.2-7.2-1.6z'/><path d='M12 8.2c0-2.2.6-3.8 2-5'/><path d='M13.2 5.4c1.4-1.6 3.8-1.8 5.2-.4-1.4 1.6-3.8 1.8-5.2.4z'/>" },
+  'Marvel': { couleur: '#FF9E8A', trace: "<circle cx='12' cy='12' r='9.5'/><circle cx='12' cy='12' r='5.5'/><path d='M12.6 9.3 10.6 12.3h2l-.9 2.4'/>" },
+  'Pixar': { couleur: '#8FD0FF', trace: "<path d='M12 2 21 7v10l-9 5-9-5V7z'/><path d='M3 7l9 5 9-5'/><path d='M12 12v10'/>" },
+  'Saisons': { couleur: '#FFAE6B', trace: "<path d='M12 4a8 8 0 0 0 0 16z'/><path d='M12 2v2M12 20v2M4.9 4.9l1.4 1.4M2 12h2M4.9 19.1l1.4-1.4'/><path d='M17 7.5v9M13.1 9.8l7.8 4.4M20.9 9.8l-7.8 4.4'/>" },
+  'Star Wars': { couleur: '#E6D98F', trace: "<circle cx='11' cy='12' r='5'/><path d='M3.5 15.5c-1.5 2 .5 3 4.5 2s8.5-3.5 11-6 2-4-1-3.5'/><path d='M19 3l.5 1.2 1.2.5-1.2.5L19 6.4l-.5-1.2-1.2-.5 1.2-.5z'/><circle cx='21' cy='17' r='.6'/>" },
   // Parcs et sites
   'Disneyland Park': { couleur: '#C9B6FF', trace: "<path d='M4 21V11l2-2 2 2v10'/><path d='M16 21V11l2-2 2 2v10'/><path d='M8 21v-7h8v7'/><path d='M10 14V8l2-3 2 3v6'/><path d='M3 21h18'/><path d='M11 21v-3a1 1 0 0 1 2 0v3'/>" },
   'Disney Adventure World': { couleur: '#C9B6FF', trace: "<rect x='3' y='9' width='18' height='12' rx='2'/><path d='M3 9 4.3 4.2l16.4 2.9L21 9'/><path d='M8.3 4.9 9.8 8.6M13.6 5.8l1.5 3.4'/>" },

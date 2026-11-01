@@ -7,9 +7,10 @@ export type TypeProuesse =
   | 'Secret'
   | 'Point photo'
   | 'Mickeys cachés'
-  | 'Chasse au trésor';
+  | 'Chasse au trésor'
+  | 'Activités';
 
-// Une ligne de src/data/prouesses.csv (statut Validé), générée par `npm run data`
+// Une ligne des CSV de src/data (statut Terminé), générée par `npm run data`
 export type ProuesseSource = {
   id: string;
   titre: string;
@@ -35,6 +36,7 @@ export const TYPE_LABELS: Record<TypeProuesse, { singulier: string; pluriel: str
   'Point photo': { singulier: 'Point photo', pluriel: 'Points photo' },
   'Mickeys cachés': { singulier: 'Mickey caché', pluriel: 'Mickeys cachés' },
   'Chasse au trésor': { singulier: 'Chasse au trésor', pluriel: 'Chasses au trésor' },
+  Activités: { singulier: 'Activité', pluriel: 'Activités' },
 };
 
 export type Prouesse = ProuesseSource & {
@@ -86,8 +88,9 @@ export const estResort = (parc: string) => RESORT.includes(parc);
 
 // Une prouesse appartient à trois catégories à la fois : son parc, son land et son type
 // (land et type peuvent manquer, ex. les prouesses d'hôtel sans type), plus certains thèmes
-export type NiveauCategorie = 'parc' | 'land' | 'type';
-const ORDRE_NIVEAUX: NiveauCategorie[] = ['parc', 'land', 'type'];
+// et, pour les personnages, leur univers
+export type NiveauCategorie = 'parc' | 'land' | 'type' | 'univers';
+const ORDRE_NIVEAUX: NiveauCategorie[] = ['parc', 'land', 'type', 'univers'];
 
 const slug = (s: string) =>
   s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
@@ -95,12 +98,34 @@ const slug = (s: string) =>
 // Thèmes du CSV qui forment aussi une catégorie, en plus du type (ex. les plantes, de type Secret)
 const THEMES_CATEGORIES = ['Plantes'];
 
+// Univers des personnages (franchise en colonne « Thème 4 » du CSV), chacun avec son picto.
+// « Saisons » réunit les personnages du CSV de saison et ceux sans franchise
+const SAISONS = 'Saisons';
+export const UNIVERS = [
+  'Classiques Disney',
+  'Mickey et ses amis',
+  'Princesses Disney',
+  'Méchants Disney',
+  'Marvel',
+  'Pixar',
+  'Star Wars',
+  SAISONS,
+];
+
+// Univers d'un personnage ; aucun pour les autres types (les activités de saison n'en ont pas)
+export function universDe(p: ProuesseSource) {
+  if (p.type !== 'Personnages') return [];
+  const univers = (p.themes ?? []).filter((t) => UNIVERS.includes(t));
+  return univers.length ? univers : [SAISONS];
+}
+
 function categoriesDe(p: ProuesseSource) {
   return [
     { niveau: 'parc' as const, nom: p.parc },
     ...(p.land ? [{ niveau: 'land' as const, nom: p.land }] : []),
     ...(p.type ? [{ niveau: 'type' as const, nom: TYPE_LABELS[p.type].pluriel }] : []),
     ...(p.themes ?? []).filter((t) => THEMES_CATEGORIES.includes(t)).map((t) => ({ niveau: 'type' as const, nom: t })),
+    ...universDe(p).map((t) => ({ niveau: 'univers' as const, nom: t })),
   ].map((c) => ({ ...c, id: `${c.niveau}-${slug(c.nom)}` }));
 }
 
@@ -129,7 +154,7 @@ export function construireCarnet(prouesses: Prouesse[]): Categorie[] {
   }
   const categories = [...parId.values()];
   categories.forEach((c) => c.prouesses.sort((a, b) => a.titre.localeCompare(b.titre, 'fr')));
-  // Parcs, puis lands, puis types ; ordre alphabétique dans chaque niveau
+  // Parcs, puis lands, puis types, puis univers ; ordre alphabétique dans chaque niveau
   return categories.sort(
     (a, b) =>
       ORDRE_NIVEAUX.indexOf(a.niveau) - ORDRE_NIVEAUX.indexOf(b.niveau) || a.nom.localeCompare(b.nom, 'fr'),

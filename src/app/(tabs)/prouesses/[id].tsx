@@ -11,6 +11,7 @@ import { ProgressionGlobale } from '@/components/ProgressionGlobale';
 import { ProgressionRow } from '@/components/ProgressionRow';
 import { ResultatsProuesses } from '@/components/ResultatsProuesses';
 import { SearchField } from '@/components/SearchField';
+import { Squelette, type SectionSquelette } from '@/components/Squelette';
 import {
   construireCarnet,
   estResort,
@@ -18,10 +19,13 @@ import {
   rechercherCarnet,
   rechercherProuesses,
   TYPE_LABELS,
+  UNIVERS,
+  universDe,
   type Categorie,
   type Prouesse,
   type TypeProuesse,
 } from '@/data';
+import { useAffichageDiffere } from '@/hooks/useAffichageDiffere';
 import { useTitrePage } from '@/hooks/useTitrePage';
 import { useCarnet, useProuesses } from '@/state/validations';
 import { colors, fonts } from '@/theme';
@@ -48,13 +52,15 @@ export default function DetailProuessesScreen() {
   useTitrePage(detail?.nom ?? 'Prouesses');
   const [recherche, setRecherche] = useState('');
   const trouvees = useMemo(() => rechercherProuesses(detail?.prouesses ?? [], recherche), [detail, recherche]);
+  // En-tête, jauge et recherche s'affichent tout de suite ; les listes, longues à monter, après leur squelette
+  const pret = useAffichageDiffere();
 
   const retour = () => (router.canGoBack() ? router.back() : router.replace('/prouesses'));
 
   const ariane = (nomParc: string) => `${estResort(nomParc) ? 'Resort' : 'Parcs'} / ${nomParc}`;
 
   // Fil d'Ariane : « Prouesses » pour un parc, « Parcs / <parc> » pour un land ou un type du parc,
-  // « Catégories » pour un type tous parcs confondus
+  // « Catégories » pour un type tous parcs confondus, « Univers » pour un univers de personnages
   const chemin = !detail
     ? 'Prouesses'
     : detail.niveau === 'parc'
@@ -65,7 +71,9 @@ export default function DetailProuessesScreen() {
           ? ariane(parc.nom)
           : land
             ? `${ariane(land.prouesses[0]?.parc ?? '')} / ${land.nom}`
-            : 'Catégories';
+            : detail.niveau === 'univers'
+              ? 'Univers'
+              : 'Catégories';
 
   // En-tête et jauge forment un seul bloc dans le design
   const entete = (
@@ -99,11 +107,19 @@ export default function DetailProuessesScreen() {
           erreur={!trouvees.length}
         />
       ) : null}
-      {detail && !trouvees.length ? (
+      {detail && !pret ? (
+        <Squelette sections={squeletteDetail(detail)} />
+      ) : detail && !trouvees.length ? (
         <Text style={styles.vide}>Aucune prouesse ne correspond à « {recherche.trim()} ».</Text>
       ) : detail?.niveau === 'land' || detail?.niveau === 'type' ? (
-        // Page d'un land : prouesses rangées par catégorie ; page d'une catégorie : par land ou hôtel
-        (detail.niveau === 'land' ? parCategorie(trouvees) : parLieu(trouvees)).map(({ titre, prouesses }) => (
+        // Page d'un land : prouesses rangées par catégorie ; page des personnages : par univers ;
+        // page d'une autre catégorie : par land ou hôtel
+        (detail.niveau === 'land'
+          ? parCategorie(trouvees)
+          : detail.nom === TYPE_LABELS.Personnages.pluriel
+            ? parUnivers(trouvees)
+            : parLieu(trouvees)
+        ).map(({ titre, prouesses }) => (
           <View key={titre} style={styles.section}>
             <Text style={styles.titreSection} accessibilityRole="header">
               {titre}
@@ -118,6 +134,26 @@ export default function DetailProuessesScreen() {
       )}
     </ScrollView>
   );
+}
+
+// Lignes affichées au plus par section du squelette : le reste est sous le pli
+const LIGNES_SQUELETTE = 6;
+
+// Squelette d'une page de land, de catégorie ou d'univers : mêmes sections que la page
+function squeletteDetail(detail: Categorie): SectionSquelette[] {
+  const sections =
+    detail.niveau === 'land'
+      ? parCategorie(detail.prouesses)
+      : detail.niveau === 'type'
+        ? detail.nom === TYPE_LABELS.Personnages.pluriel
+          ? parUnivers(detail.prouesses)
+          : parLieu(detail.prouesses)
+        : [{ titre: '', prouesses: detail.prouesses }];
+  return sections.map(({ titre, prouesses }) => ({
+    forme: 'liste',
+    nombre: Math.min(prouesses.length, LIGNES_SQUELETTE),
+    titre: !!titre,
+  }));
 }
 
 function ListeProuesses({ prouesses }: { prouesses: Prouesse[] }) {
@@ -144,6 +180,15 @@ function parCategorie(prouesses: Prouesse[]) {
   }));
   groupes.push({ titre: 'Autres', prouesses: prouesses.filter((p) => !p.type) });
   return groupes.filter((g) => g.prouesses.length);
+}
+
+// Regroupe les personnages par univers, dans l'ordre de la planche (un personnage de saison
+// figure aussi dans l'univers de sa franchise)
+function parUnivers(prouesses: Prouesse[]) {
+  return UNIVERS.map((univers) => ({
+    titre: univers,
+    prouesses: prouesses.filter((p) => universDe(p).includes(univers)),
+  })).filter((g) => g.prouesses.length);
 }
 
 // Regroupe les prouesses par land (ou hôtel) : parcs d'abord, resort ensuite, dans l'ordre des données ;
@@ -186,6 +231,7 @@ function EcranParc({ parc, entete, contenu }: EcranParcProps) {
   );
   const lands = sousCategories.filter((c) => c.niveau === 'land');
   const types = sousCategories.filter((c) => c.niveau === 'type');
+  const pret = useAffichageDiffere();
   // En recherche, les prouesses trouvées dans les lands et catégories du parc sont listées directement
   const trouvees = useMemo(
     () => (recherche.trim() ? rechercherProuesses(parc.prouesses, recherche) : []),
@@ -208,9 +254,22 @@ function EcranParc({ parc, entete, contenu }: EcranParcProps) {
         erreur={!lands.length && !types.length && !trouvees.length}
       />
 
-      <ResultatsProuesses prouesses={trouvees} />
+      {!pret ? (
+        <Squelette
+          sections={
+            lands.length || types.length
+              ? [
+                  ...(lands.length ? [{ forme: 'grille' as const, nombre: lands.length }] : []),
+                  ...(types.length ? [{ forme: 'liste' as const, nombre: Math.min(types.length, LIGNES_SQUELETTE) }] : []),
+                ]
+              : [{ forme: 'liste', nombre: Math.min(parc.prouesses.length, LIGNES_SQUELETTE), titre: false }]
+          }
+        />
+      ) : null}
 
-      {lands.length ? (
+      {pret ? <ResultatsProuesses prouesses={trouvees} /> : null}
+
+      {pret && lands.length ? (
         <View style={styles.section}>
           <Text style={styles.titreSection} accessibilityRole="header">
             {estResort(parc.nom) ? 'Lieux' : 'Lands'}
@@ -219,7 +278,7 @@ function EcranParc({ parc, entete, contenu }: EcranParcProps) {
         </View>
       ) : null}
 
-      {types.length ? (
+      {pret && types.length ? (
         <View style={styles.section}>
           <Text style={styles.titreSection} accessibilityRole="header">
             Catégories
@@ -238,7 +297,7 @@ function EcranParc({ parc, entete, contenu }: EcranParcProps) {
         </View>
       ) : null}
 
-      {!lands.length && !types.length ? (
+      {pret && !lands.length && !types.length ? (
         recherche.trim() ? (
           trouvees.length ? null : <Text style={styles.vide}>Aucun résultat pour « {recherche.trim()} ».</Text>
         ) : (
