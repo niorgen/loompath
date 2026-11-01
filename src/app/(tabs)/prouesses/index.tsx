@@ -31,13 +31,13 @@ export default function CarnetScreen() {
     [enRecherche, prouesses, recherche],
   );
 
-  // Les lands se consultent depuis la page de leur parc ; ils ne remontent ici qu'en recherche
+  // Les lands se consultent depuis la page de leur parc ; ils ne remontent ici qu'en recherche.
+  // Les univers se consultent depuis la page Personnages
   const sections = [
     { titre: 'Parcs', categories: resultats.filter((c) => c.niveau === 'parc' && !estResort(c.nom)) },
     { titre: 'Resort', categories: resultats.filter((c) => c.niveau === 'parc' && estResort(c.nom)) },
     { titre: 'Lands', categories: enRecherche ? resultats.filter((c) => c.niveau === 'land') : [] },
     { titre: 'Catégories', categories: resultats.filter((c) => c.niveau === 'type') },
-    { titre: 'Univers', categories: resultats.filter((c) => c.niveau === 'univers') },
   ].filter((s) => s.categories.length);
   const aucunResultat = pret && !sections.length && !trouvees.length;
 
@@ -60,8 +60,8 @@ export default function CarnetScreen() {
       {pret ? <ResultatsProuesses prouesses={trouvees} /> : null}
 
       {!pret ? (
-        // Parcs, Resort, Catégories, Univers : nombre de cartes proche de celui du carnet
-        <Squelette sections={[2, 2, 9, 8].map((nombre) => ({ forme: 'grille', nombre }))} />
+        // Parcs, Resort, Catégories : nombre de cartes proche de celui du carnet
+        <Squelette sections={[2, 2, 9].map((nombre) => ({ forme: 'grille', nombre }))} />
       ) : null}
 
       {(pret ? sections : []).map((section) => (

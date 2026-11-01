@@ -19,8 +19,6 @@ import {
   rechercherCarnet,
   rechercherProuesses,
   TYPE_LABELS,
-  UNIVERS,
-  universDe,
   type Categorie,
   type Prouesse,
   type TypeProuesse,
@@ -54,13 +52,18 @@ export default function DetailProuessesScreen() {
   const trouvees = useMemo(() => rechercherProuesses(detail?.prouesses ?? [], recherche), [detail, recherche]);
   // En-tête, jauge et recherche s'affichent tout de suite ; les listes, longues à monter, après leur squelette
   const pret = useAffichageDiffere();
+  // Page Personnages : seulement la grille des univers ; les personnages se listent dans chaque univers,
+  // ou directement en recherche
+  const estPersonnages = detail?.niveau === 'type' && detail.nom === TYPE_LABELS.Personnages.pluriel;
+  const enRecherche = !!recherche.trim();
+  const univers = estPersonnages && !enRecherche ? categories.filter((c) => c.niveau === 'univers') : [];
 
   const retour = () => (router.canGoBack() ? router.back() : router.replace('/prouesses'));
 
   const ariane = (nomParc: string) => `${estResort(nomParc) ? 'Resort' : 'Parcs'} / ${nomParc}`;
 
   // Fil d'Ariane : « Prouesses » pour un parc, « Parcs / <parc> » pour un land ou un type du parc,
-  // « Catégories » pour un type tous parcs confondus, « Univers » pour un univers de personnages
+  // « Catégories » pour un type tous parcs confondus, « Catégories / Personnages » pour un univers
   const chemin = !detail
     ? 'Prouesses'
     : detail.niveau === 'parc'
@@ -72,7 +75,7 @@ export default function DetailProuessesScreen() {
           : land
             ? `${ariane(land.prouesses[0]?.parc ?? '')} / ${land.nom}`
             : detail.niveau === 'univers'
-              ? 'Univers'
+              ? `Catégories / ${TYPE_LABELS.Personnages.pluriel}`
               : 'Catégories';
 
   // En-tête et jauge forment un seul bloc dans le design
@@ -108,18 +111,27 @@ export default function DetailProuessesScreen() {
         />
       ) : null}
       {detail && !pret ? (
-        <Squelette sections={squeletteDetail(detail)} />
-      ) : detail && !trouvees.length ? (
+        <Squelette
+          sections={univers.length ? [{ forme: 'grille', nombre: univers.length }] : squeletteDetail(detail)}
+        />
+      ) : null}
+      {pret && univers.length ? (
+        <View style={styles.section}>
+          <Text style={styles.titreSection} accessibilityRole="header">
+            Univers
+          </Text>
+          <GrilleCategories
+            categories={univers}
+            // Un univers ouvert depuis les personnages d'un parc ou d'un land reste limité à ce lieu
+            onPress={(u) => router.push({ pathname: '/prouesses/[id]', params: { id: u.id, parc: parcId, land: landId } })}
+          />
+        </View>
+      ) : null}
+      {!pret || univers.length ? null : detail && !trouvees.length ? (
         <Text style={styles.vide}>Aucune prouesse ne correspond à « {recherche.trim()} ».</Text>
-      ) : detail?.niveau === 'land' || detail?.niveau === 'type' ? (
-        // Page d'un land : prouesses rangées par catégorie ; page des personnages : par univers ;
-        // page d'une autre catégorie : par land ou hôtel
-        (detail.niveau === 'land'
-          ? parCategorie(trouvees)
-          : detail.nom === TYPE_LABELS.Personnages.pluriel
-            ? parUnivers(trouvees)
-            : parLieu(trouvees)
-        ).map(({ titre, prouesses }) => (
+      ) : detail?.niveau === 'land' || (detail?.niveau === 'type' && !estPersonnages) ? (
+        // Page d'un land : prouesses rangées par catégorie ; page d'une catégorie : par land ou hôtel
+        (detail.niveau === 'land' ? parCategorie(trouvees) : parLieu(trouvees)).map(({ titre, prouesses }) => (
           <View key={titre} style={styles.section}>
             <Text style={styles.titreSection} accessibilityRole="header">
               {titre}
@@ -145,9 +157,7 @@ function squeletteDetail(detail: Categorie): SectionSquelette[] {
     detail.niveau === 'land'
       ? parCategorie(detail.prouesses)
       : detail.niveau === 'type'
-        ? detail.nom === TYPE_LABELS.Personnages.pluriel
-          ? parUnivers(detail.prouesses)
-          : parLieu(detail.prouesses)
+        ? parLieu(detail.prouesses)
         : [{ titre: '', prouesses: detail.prouesses }];
   return sections.map(({ titre, prouesses }) => ({
     forme: 'liste',
@@ -180,15 +190,6 @@ function parCategorie(prouesses: Prouesse[]) {
   }));
   groupes.push({ titre: 'Autres', prouesses: prouesses.filter((p) => !p.type) });
   return groupes.filter((g) => g.prouesses.length);
-}
-
-// Regroupe les personnages par univers, dans l'ordre de la planche (un personnage de saison
-// figure aussi dans l'univers de sa franchise)
-function parUnivers(prouesses: Prouesse[]) {
-  return UNIVERS.map((univers) => ({
-    titre: univers,
-    prouesses: prouesses.filter((p) => universDe(p).includes(univers)),
-  })).filter((g) => g.prouesses.length);
 }
 
 // Regroupe les prouesses par land (ou hôtel) : parcs d'abord, resort ensuite, dans l'ordre des données ;
