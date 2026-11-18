@@ -54,7 +54,8 @@ export function MiniCarte({ joueur, prouesses, onOuvrirProuesse }: Props) {
 
 const styles = StyleSheet.create({
   fenetre: {
-    height: 236,
+    // Hauteur du design (236) × 1,5
+    height: 354,
     padding: 10,
     backgroundColor: colors.surface,
     borderWidth: 1,

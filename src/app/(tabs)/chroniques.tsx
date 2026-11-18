@@ -1,10 +1,10 @@
-import { router, useNavigation } from 'expo-router';
+import { useNavigation } from 'expo-router';
 import type { BottomTabNavigationProp } from 'expo-router/tabs';
 import { useEffect, useMemo, useState } from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { CarteSouvenir } from '@/components/CarteSouvenir';
+import { CarteSouvenirProuesse } from '@/components/CarteSouvenir';
 import { HeaderTitle } from '@/components/HeaderTitle';
 import { NAV_HEIGHT } from '@/components/NavigationMenu';
 import { ResumeMois } from '@/components/ResumeMois';
@@ -13,9 +13,6 @@ import {
   compterSouvenirs,
   compterVisites,
   construireChroniques,
-  formatDateValidation,
-  formatHeureValidation,
-  TYPE_LABELS,
   type EtapeChroniques,
   type Prouesse,
 } from '@/data';
@@ -25,38 +22,17 @@ import { colors, fonts, normalLineHeight } from '@/theme';
 
 type Vue = 'timeline' | 'grille';
 
-const ouvrir = (prouesse: Prouesse) => router.push(`/prouesse/${prouesse.id}`);
-
-function Souvenir({ prouesse, taille }: { prouesse: Prouesse; taille: 'grande' | 'petite' }) {
-  const type = prouesse.type && TYPE_LABELS[prouesse.type].singulier;
-  // Le type est en tête ; le lieu et les thèmes du CSV suivent
-  const themes = [...new Set([prouesse.land ?? prouesse.parc, ...(prouesse.themes ?? [])])].filter((t) => t !== type);
-  return (
-    <CarteSouvenir
-      titre={prouesse.titre}
-      photoUri={prouesse.photoUri}
-      miniature={prouesse.miniature}
-      heure={formatHeureValidation(prouesse.dateValidation!)}
-      date={formatDateValidation(prouesse.dateValidation!)}
-      type={type}
-      themes={themes}
-      taille={taille}
-      onPress={() => ouvrir(prouesse)}
-    />
-  );
-}
-
 // Premier souvenir en grande carte, les suivants deux par deux
 function SouvenirsDuJour({ prouesses }: { prouesses: Prouesse[] }) {
   const [premiere, ...suivantes] = prouesses;
   const paires = Array.from({ length: Math.ceil(suivantes.length / 2) }, (_, i) => suivantes.slice(i * 2, i * 2 + 2));
   return (
     <View style={styles.cartes}>
-      <Souvenir prouesse={premiere} taille="grande" />
+      <CarteSouvenirProuesse prouesse={premiere} taille="grande" />
       {paires.map((paire) => (
         <View key={paire[0].id} style={styles.paire}>
           {paire.map((prouesse) => (
-            <Souvenir key={prouesse.id} prouesse={prouesse} taille="petite" />
+            <CarteSouvenirProuesse key={prouesse.id} prouesse={prouesse} taille="petite" />
           ))}
           {paire.length === 1 ? <View style={styles.caseVide} /> : null}
         </View>
@@ -148,7 +124,7 @@ export default function ChroniquesScreen() {
           data={grille}
           numColumns={2}
           keyExtractor={(prouesse) => prouesse.id}
-          renderItem={({ item: prouesse }) => <Souvenir prouesse={prouesse} taille="petite" />}
+          renderItem={({ item: prouesse }) => <CarteSouvenirProuesse prouesse={prouesse} taille="petite" />}
           ListHeaderComponent={entete}
           ListEmptyComponent={vide}
           ListFooterComponent={fin}

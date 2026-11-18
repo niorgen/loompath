@@ -122,7 +122,7 @@ const SRI = {
  * L'app pousse les données via window.majDonnees(donnees) ; la carte répond par
  * des messages JSON (ReactNativeWebView sur mobile, window.parent sur le web).
  */
-// apercu : carte figée (aucun geste) recadrée à chaque mise à jour sur les points et le joueur
+// apercu : carte figée (aucun geste) recadrée à chaque mise à jour sur les points (pas sur le joueur)
 export function construireHtmlCarte({ margeBas, apercu = false }: { margeBas: number; apercu?: boolean }) {
   return `<!doctype html>
 <html lang="fr">
@@ -294,10 +294,12 @@ ${FILTRE_TUILES}
       carte.setView([donnees.centre.latitude, donnees.centre.longitude], 18);
     }
 
-    // Aperçu : toujours cadré sur les points et le joueur
+    // Aperçu : toujours cadré sur les points seuls (les prouesses les plus proches). Le joueur reste
+    // affiché s'il est dans le cadre, mais n'entre pas dans le cadrage : loin du parc, il le décentrerait
+    // vers le bord du resort. Sans point, la carte se centre sur le joueur.
     if (APERCU) {
       var emprise = donnees.points.map(function (p) { return [p.latitude, p.longitude]; });
-      if (donnees.joueur) emprise.push([donnees.joueur.latitude, donnees.joueur.longitude]);
+      if (!emprise.length && donnees.joueur) emprise.push([donnees.joueur.latitude, donnees.joueur.longitude]);
       if (emprise.length) carte.fitBounds(emprise, { padding: [24, 24], maxZoom: 18 });
       return;
     }

@@ -28,6 +28,9 @@ export function Chip({ libelle, actif, onPress }: Props) {
 
 const styles = StyleSheet.create({
   chip: {
+    // Jamais plus large que sa ligne : un libellé long est tronqué (« … ») au lieu de déborder
+    // de la carte et de manger sa marge
+    maxWidth: '100%',
     height: 26,
     justifyContent: 'center',
     paddingHorizontal: 10,

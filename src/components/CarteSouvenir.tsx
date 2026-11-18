@@ -1,9 +1,44 @@
 import { Image } from 'expo-image';
+import { router } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Chip } from '@/components/Chip';
+import { formatDateValidation, formatHeureValidation, TYPE_LABELS, type Prouesse } from '@/data';
 import { useSourcePhoto } from '@/hooks/useSourcePhoto';
 import { colors, fonts, normalLineHeight, radius } from '@/theme';
+
+type SouvenirProps = {
+  /** Prouesse validée (avec sa date de validation) */
+  prouesse: Prouesse;
+  taille: 'grande' | 'petite';
+  largeur?: number;
+  /** Un seul tag : le type, ou à défaut le lieu (ex. carrousel du Journal) */
+  tagUnique?: boolean;
+};
+
+// Carte souvenir d'une prouesse validée (Chroniques, « Récemment obtenus » du Journal) :
+// le type est en tête, le lieu et les thèmes du CSV suivent ; ouvre la prouesse à l'appui
+export function CarteSouvenirProuesse({ prouesse, taille, largeur, tagUnique }: SouvenirProps) {
+  const type = prouesse.type && TYPE_LABELS[prouesse.type].singulier;
+  const tousLesThemes = [...new Set([prouesse.land ?? prouesse.parc, ...(prouesse.themes ?? [])])].filter(
+    (t) => t !== type,
+  );
+  const themes = tagUnique ? (type ? [] : tousLesThemes.slice(0, 1)) : tousLesThemes;
+  return (
+    <CarteSouvenir
+      titre={prouesse.titre}
+      photoUri={prouesse.photoUri}
+      miniature={prouesse.miniature}
+      heure={formatHeureValidation(prouesse.dateValidation!)}
+      date={formatDateValidation(prouesse.dateValidation!)}
+      type={type}
+      themes={themes}
+      taille={taille}
+      largeur={largeur}
+      onPress={() => router.push(`/prouesse/${prouesse.id}`)}
+    />
+  );
+}
 
 type Props = {
   titre: string;
@@ -18,11 +53,14 @@ type Props = {
   themes: string[];
   /** Grande carte : premier souvenir d'une journée ; petite : grille à deux colonnes */
   taille: 'grande' | 'petite';
+  /** Largeur fixe, ex. dans un carrousel : remplace le flex: 1 de la petite carte (moitié de ligne).
+   * Ne pas contrer ce flex par un flex: 0, qui donne sur le web flex-basis: 0% et écrase la carte */
+  largeur?: number;
   onPress?: () => void;
 };
 
 // « Carte souvenir » de la frise Chroniques : photo avec l'heure, titre, type et thèmes
-export function CarteSouvenir({ titre, photoUri, miniature, heure, date, type, themes, taille, onPress }: Props) {
+export function CarteSouvenir({ titre, photoUri, miniature, heure, date, type, themes, taille, largeur, onPress }: Props) {
   const { source, onError } = useSourcePhoto(photoUri, miniature);
   const grande = taille === 'grande';
 
@@ -31,7 +69,11 @@ export function CarteSouvenir({ titre, photoUri, miniature, heure, date, type, t
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={`${titre}, validée le ${date} à ${heure}`}
-      style={({ pressed }) => [styles.carte, !grande && styles.cartePetite, pressed && { opacity: 0.85 }]}
+      style={({ pressed }) => [
+        styles.carte,
+        largeur !== undefined ? { width: largeur } : !grande && styles.cartePetite,
+        pressed && { opacity: 0.85 },
+      ]}
     >
       <View style={[styles.photo, { height: grande ? 340 : 180 }]}>
         {source ? (

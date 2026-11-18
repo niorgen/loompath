@@ -1,8 +1,9 @@
 import { router } from 'expo-router';
 import { useMemo } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { CarteSouvenirProuesse } from '@/components/CarteSouvenir';
 import { MiniCarte } from '@/components/carte/MiniCarte';
 import { HeaderTitle } from '@/components/HeaderTitle';
 import { IndiceRow } from '@/components/IndiceRow';
@@ -11,9 +12,8 @@ import { NAV_HEIGHT } from '@/components/NavigationMenu';
 import { ProgressionRow } from '@/components/ProgressionRow';
 import { ProuesseRow } from '@/components/ProuesseRow';
 import { SectionHeader } from '@/components/SectionHeader';
-import { ServiceCard } from '@/components/ServiceCard';
 import { StatCards } from '@/components/StatCards';
-import { calculerStats, construireCarnet, TYPE_LABELS } from '@/data';
+import { calculerStats, construireCarnet } from '@/data';
 import { useLandDuJoueur, usePositionJoueur } from '@/hooks/usePositionJoueur';
 import { formatDistance, useProuessesProches } from '@/hooks/useProuessesProches';
 import { useTitrePage } from '@/hooks/useTitrePage';
@@ -24,7 +24,7 @@ const ouvrirProuesse = (id: string) => router.push(`/prouesse/${id}`);
 
 // Journal : deux variantes du Figma selon la localisation.
 // Sans position : stats, récemment obtenus, prouesses à faire.
-// Avec position : mini-carte des prouesses proches, récemment obtenus, catégories du land
+// Avec position : mini-carte des prouesses proches (au-dessus des stats), récemment obtenus, catégories du land
 // où se trouve le joueur, puis les prouesses à proximité.
 export default function JournalScreen() {
   useTitrePage('Journal');
@@ -57,6 +57,11 @@ export default function JournalScreen() {
     [categorieLand],
   );
 
+  // Cartes souvenir de la même largeur que dans la grille des Chroniques (deux colonnes,
+  // marges de 20 et écart de 10) : la troisième dépasse du bord pour inviter à faire défiler
+  const { width: largeurEcran } = useWindowDimensions();
+  const largeurCarte = (largeurEcran - 2 * 20 - 10) / 2;
+
   const recemment =
     recentes.length > 0 ? (
       <View style={styles.section}>
@@ -69,13 +74,12 @@ export default function JournalScreen() {
           contentContainerStyle={styles.carouselContent}
         >
           {recentes.map((prouesse) => (
-            <ServiceCard
+            <CarteSouvenirProuesse
               key={prouesse.id}
-              badge={prouesse.type ? TYPE_LABELS[prouesse.type].singulier : (prouesse.land ?? prouesse.parc)}
-              nom={prouesse.titre}
-              // La miniature survit au nettoyage du cache photo, contrairement au fichier original
-              photo={prouesse.miniature ?? prouesse.photoUri}
-              onPress={() => router.push(`/prouesse/${prouesse.id}`)}
+              prouesse={prouesse}
+              taille="petite"
+              largeur={largeurCarte}
+              tagUnique
             />
           ))}
         </ScrollView>
@@ -95,17 +99,15 @@ export default function JournalScreen() {
 
         {refusee ? <MessageLocalisation onAutoriser={autoriser} /> : null}
 
+        {/* Carte des prouesses proches juste sous le titre, puis les scores */}
+        {position && proches.length > 0 ? (
+          <MiniCarte joueur={position} prouesses={proches} onOuvrirProuesse={ouvrirProuesse} />
+        ) : null}
+
         <StatCards score={statsGlobales.score} progression={statsGlobales.progression} />
 
         {position ? (
           <>
-            {proches.length > 0 ? (
-              <MiniCarte
-                joueur={position}
-                prouesses={proches}
-                onOuvrirProuesse={ouvrirProuesse}
-              />
-            ) : null}
 
             {recemment}
 
