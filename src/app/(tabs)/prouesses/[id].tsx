@@ -12,6 +12,7 @@ import { ProgressionRow } from '@/components/ProgressionRow';
 import { SearchField } from '@/components/SearchField';
 import { Squelette, type SectionSquelette } from '@/components/Squelette';
 import {
+  comparerFr,
   construireCarnet,
   estResort,
   estSaisonniere,
@@ -251,7 +252,7 @@ function lieuxDe(prouesses: Prouesse[]): Categorie[] {
   const rang = (parc: string) => (estResort(parc) ? ordreParcs.length : 0) + ordreParcs.indexOf(parc);
   const lands = construireCarnet(prouesses.filter((p) => p.land))
     .filter((c) => c.niveau === 'land')
-    .sort((a, b) => rang(a.prouesses[0].parc) - rang(b.prouesses[0].parc) || a.nom.localeCompare(b.nom, 'fr'));
+    .sort((a, b) => rang(a.prouesses[0].parc) - rang(b.prouesses[0].parc) || comparerFr(a.nom, b.nom));
   const parcs = construireCarnet(prouesses.filter((p) => !p.land)).filter((c) => c.niveau === 'parc');
   return [...lands, ...parcs];
 }
@@ -277,7 +278,7 @@ function parLieu(prouesses: Prouesse[]) {
     (a, b) =>
       rang(a.parc) - rang(b.parc) ||
       Number(!a.land) - Number(!b.land) ||
-      (a.land ?? '').localeCompare(b.land ?? '', 'fr'),
+      comparerFr(a.land ?? '', b.land ?? ''),
   );
 }
 

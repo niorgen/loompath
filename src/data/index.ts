@@ -27,6 +27,22 @@ export type ProuesseSource = {
 
 export const prouessesSource = prouessesJson as ProuesseSource[];
 
+// Comparaison de textes en français. Sur Android, Hermes délègue Intl à ICU (Java) : chaque
+// localeCompare(…, 'fr') y reconstruit un comparateur (LocaleMatcher…), ce qui coûtait plusieurs
+// secondes par calcul du carnet. Un seul Intl.Collator, créé une fois, est partagé partout.
+export const comparerFr = new Intl.Collator('fr').compare;
+
+// Rang alphabétique de chaque prouesse par titre, calculé une seule fois : les tris du carnet
+// comparent ensuite des nombres, sans aucun appel à ICU
+const RANG_TITRE = new Map(
+  [...prouessesSource].sort((a, b) => comparerFr(a.titre, b.titre)).map((p, i) => [p.id, i]),
+);
+const parTitre = (a: ProuesseSource, b: ProuesseSource) => RANG_TITRE.get(a.id)! - RANG_TITRE.get(b.id)!;
+
+// Dates ISO de validation, de la plus récente à la plus ancienne (comparaison de chaînes simple)
+export const parDateDecroissante = (a: { dateValidation?: string }, b: { dateValidation?: string }) =>
+  a.dateValidation! < b.dateValidation! ? 1 : a.dateValidation! > b.dateValidation! ? -1 : 0;
+
 // Libellés au singulier (méta d'une prouesse) et au pluriel (catégorie du carnet)
 export const TYPE_LABELS: Record<TypeProuesse, { singulier: string; pluriel: string }> = {
   Attraction: { singulier: 'Attraction', pluriel: 'Attractions' },
@@ -167,11 +183,10 @@ export function construireCarnet(
     }
   }
   const categories = [...parId.values()];
-  categories.forEach((c) => c.prouesses.sort((a, b) => a.titre.localeCompare(b.titre, 'fr')));
+  categories.forEach((c) => c.prouesses.sort(parTitre));
   // Parcs, puis lands, puis types, puis univers ; ordre alphabétique dans chaque niveau
   return categories.sort(
-    (a, b) =>
-      ORDRE_NIVEAUX.indexOf(a.niveau) - ORDRE_NIVEAUX.indexOf(b.niveau) || a.nom.localeCompare(b.nom, 'fr'),
+    (a, b) => ORDRE_NIVEAUX.indexOf(a.niveau) - ORDRE_NIVEAUX.indexOf(b.niveau) || comparerFr(a.nom, b.nom),
   );
 }
 
@@ -227,11 +242,16 @@ const debutDuJour = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDa
 const majuscule = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const cleJour = (d: Date) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
 
-export const formatDateValidation = (iso: string) =>
-  new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+// Formats de date créés une seule fois (même coût ICU que localeCompare à chaque toLocale…String)
+const FORMAT_DATE = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+const FORMAT_HEURE = new Intl.DateTimeFormat('fr-FR', { hour: '2-digit', minute: '2-digit' });
+const FORMAT_MOIS = new Intl.DateTimeFormat('fr-FR', { month: 'long', year: 'numeric' });
+const FORMAT_JOUR = new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+const FORMAT_JOUR_COURT = new Intl.DateTimeFormat('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
 
-export const formatHeureValidation = (iso: string) =>
-  new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+export const formatDateValidation = (iso: string) => FORMAT_DATE.format(new Date(iso));
+
+export const formatHeureValidation = (iso: string) => FORMAT_HEURE.format(new Date(iso));
 
 export const compterSouvenirs = (n: number) => `${n} souvenir${n > 1 ? 's' : ''}`;
 
@@ -248,7 +268,7 @@ export function construireChroniques(prouesses: Prouesse[], maintenant = new Dat
   const etapes = new Map<string, EtapeChroniques>();
   const validees = prouesses
     .filter((p) => p.dateValidation)
-    .sort((a, b) => b.dateValidation!.localeCompare(a.dateValidation!));
+    .sort(parDateDecroissante);
 
   for (const prouesse of validees) {
     const date = new Date(prouesse.dateValidation!);
@@ -258,12 +278,12 @@ export function construireChroniques(prouesses: Prouesse[], maintenant = new Dat
     let etape = etapes.get(id);
     if (!etape) {
       const titre = resume
-        ? majuscule(date.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }))
+        ? majuscule(FORMAT_MOIS.format(date))
         : jour >= aujourdhui
           ? 'Aujourd’hui'
           : jour >= hier
             ? 'Hier'
-            : majuscule(date.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }));
+            : majuscule(FORMAT_JOUR.format(date));
       etape = { id, titre, meta: '', resume, prouesses: [] };
       etapes.set(id, etape);
     }
@@ -274,11 +294,7 @@ export function construireChroniques(prouesses: Prouesse[], maintenant = new Dat
     const nombre = compterSouvenirs(etape.prouesses.length);
     // Aujourd'hui et Hier rappellent la date, les autres titres la contiennent déjà
     const rappel = !etape.resume && !/\d/.test(etape.titre);
-    const date = new Date(etape.prouesses[0].dateValidation!).toLocaleDateString('fr-FR', {
-      weekday: 'short',
-      day: 'numeric',
-      month: 'short',
-    });
+    const date = FORMAT_JOUR_COURT.format(new Date(etape.prouesses[0].dateValidation!));
     return { ...etape, meta: rappel ? `${date} · ${nombre}` : nombre };
   });
 }

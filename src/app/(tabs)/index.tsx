@@ -13,7 +13,7 @@ import { ProgressionRow } from '@/components/ProgressionRow';
 import { ProuesseRow } from '@/components/ProuesseRow';
 import { SectionHeader } from '@/components/SectionHeader';
 import { StatCards } from '@/components/StatCards';
-import { calculerStats, construireCarnet, estSaisonniere } from '@/data';
+import { calculerStats, construireCarnet, estSaisonniere, parDateDecroissante } from '@/data';
 import { useLandDuJoueur, usePositionJoueur } from '@/hooks/usePositionJoueur';
 import { formatDistance, useProuessesProches } from '@/hooks/useProuessesProches';
 import { useTitrePage } from '@/hooks/useTitrePage';
@@ -42,7 +42,7 @@ export default function JournalScreen() {
     () =>
       prouesses
         .filter((p) => p.dateValidation)
-        .sort((a, b) => b.dateValidation!.localeCompare(a.dateValidation!))
+        .sort(parDateDecroissante)
         .slice(0, 10),
     [prouesses],
   );
