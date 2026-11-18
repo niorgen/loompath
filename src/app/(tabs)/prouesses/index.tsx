@@ -1,12 +1,12 @@
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { GrilleCategories } from '@/components/GrilleCategories';
 import { HeaderTitle } from '@/components/HeaderTitle';
+import { ListeProuesses, type SectionProuesses } from '@/components/ListeProuesses';
 import { NAV_HEIGHT } from '@/components/NavigationMenu';
-import { ResultatsProuesses } from '@/components/ResultatsProuesses';
 import { SearchField } from '@/components/SearchField';
 import { Squelette } from '@/components/Squelette';
 import { estResort, rechercherCarnet, rechercherProuesses } from '@/data';
@@ -41,14 +41,8 @@ export default function CarnetScreen() {
   ].filter((s) => s.categories.length);
   const aucunResultat = pret && !sections.length && !trouvees.length;
 
-  return (
-    <ScrollView
-      style={styles.screen}
-      contentContainerStyle={[styles.contenu, { paddingTop: insets.top + 16, paddingBottom: NAV_HEIGHT + insets.bottom + 24 }]}
-      keyboardDismissMode="on-drag"
-      keyboardShouldPersistTaps="handled"
-      showsVerticalScrollIndicator={false}
-    >
+  const enteteListe = (
+    <View style={styles.zone}>
       <HeaderTitle titre="Prouesses" />
       <SearchField
         value={recherche}
@@ -57,36 +51,51 @@ export default function CarnetScreen() {
         erreur={aucunResultat}
       />
 
-      {pret ? <ResultatsProuesses prouesses={trouvees} /> : null}
-
       {!pret ? (
         // Parcs, Resort, Catégories : nombre de cartes proche de celui du carnet
         <Squelette sections={[2, 2, 9].map((nombre) => ({ forme: 'grille', nombre }))} />
       ) : null}
+    </View>
+  );
 
-      {(pret ? sections : []).map((section) => (
-        <View key={section.titre} style={styles.section}>
-          <Text style={styles.titreSection} accessibilityRole="header">
-            {section.titre}
-          </Text>
-          <GrilleCategories categories={section.categories} onPress={(c) => router.push(`/prouesses/${c.id}`)} />
-        </View>
-      ))}
+  // Prouesses trouvées en recherche, en liste virtualisée au-dessus des catégories qui correspondent
+  const prouessesTrouvees: SectionProuesses[] = pret && trouvees.length ? [{ titre: 'Prouesses', data: trouvees }] : [];
 
-      {aucunResultat ? (
-        <Text style={styles.vide}>Aucun résultat pour « {recherche.trim()} ».</Text>
-      ) : null}
-    </ScrollView>
+  const pied =
+    pret && (sections.length || aucunResultat) ? (
+      <View style={[styles.zone, styles.pied]}>
+        {sections.map((section) => (
+          <View key={section.titre} style={styles.section}>
+            <Text style={styles.titreSection} accessibilityRole="header">
+              {section.titre}
+            </Text>
+            <GrilleCategories categories={section.categories} onPress={(c) => router.push(`/prouesses/${c.id}`)} />
+          </View>
+        ))}
+
+        {aucunResultat ? <Text style={styles.vide}>Aucun résultat pour « {recherche.trim()} ».</Text> : null}
+      </View>
+    ) : null;
+
+  return (
+    <ListeProuesses
+      sections={prouessesTrouvees}
+      entete={enteteListe}
+      pied={pied}
+      contenu={[styles.contenu, { paddingTop: insets.top + 16, paddingBottom: NAV_HEIGHT + insets.bottom + 24 }]}
+    />
   );
 }
 
 const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-  },
   contenu: {
     paddingHorizontal: 16,
+  },
+  zone: {
     gap: 24,
+  },
+  pied: {
+    paddingTop: 24,
   },
   section: {
     gap: 16,

@@ -1,15 +1,14 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useMemo, useState, type ReactNode } from 'react';
-import { ScrollView, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { DetailHeader } from '@/components/DetailHeader';
 import { GrilleCategories } from '@/components/GrilleCategories';
-import { IndiceRow } from '@/components/IndiceRow';
+import { ListeProuesses, type SectionProuesses } from '@/components/ListeProuesses';
 import { NAV_HEIGHT } from '@/components/NavigationMenu';
 import { ProgressionGlobale } from '@/components/ProgressionGlobale';
 import { ProgressionRow } from '@/components/ProgressionRow';
-import { ResultatsProuesses } from '@/components/ResultatsProuesses';
 import { SearchField } from '@/components/SearchField';
 import { Squelette, type SectionSquelette } from '@/components/Squelette';
 import {
@@ -86,21 +85,29 @@ export default function DetailProuessesScreen() {
     </View>
   );
 
-  const contenu = [styles.zoneCentrale, { paddingTop: insets.top + 16, paddingBottom: NAV_HEIGHT + insets.bottom + 24 }];
+  // Pas de gap sur le contenu d'une liste virtualisée : les espacements viennent des sections
+  const contenuListe = [styles.zoneListe, { paddingTop: insets.top + 16, paddingBottom: NAV_HEIGHT + insets.bottom + 24 }];
 
   if (detail?.niveau === 'parc') {
-    return <EcranParc parc={detail} entete={entete} contenu={contenu} />;
+    return <EcranParc parc={detail} entete={entete} contenu={contenuListe} />;
   }
 
-  return (
-    <ScrollView
-      style={styles.screen}
-      // Les sections (land, catégorie) s'espacent comme celles d'un parc
-      contentContainerStyle={[contenu, !!detail && styles.zoneSections]}
-      keyboardDismissMode="on-drag"
-      keyboardShouldPersistTaps="handled"
-      showsVerticalScrollIndicator={false}
-    >
+  // Liste des prouesses : page d'un land rangée par catégorie, page d'une catégorie par land ou hôtel,
+  // univers (ou recherche dans les personnages) en une seule section sans titre
+  const sections: SectionProuesses[] =
+    !pret || univers.length || !detail || !trouvees.length
+      ? []
+      : detail.niveau === 'land'
+        ? parCategorie(trouvees).map(({ titre, prouesses }) => ({ titre, data: prouesses }))
+        : detail.niveau === 'type' && !estPersonnages
+          ? parLieu(trouvees).map(({ titre, prouesses }) => ({ titre, data: prouesses }))
+          : [{ titre: '', data: trouvees }];
+
+  // En-tête de la liste : tout ce qui précède les prouesses (élément, et non composant,
+  // pour que le champ de recherche garde le focus d'un rendu à l'autre)
+  const enteteListe = (
+    // Les sections (land, catégorie) s'espacent comme celles d'un parc
+    <View style={detail ? styles.zoneSections : styles.zoneEntete}>
       {entete}
       {detail ? (
         <SearchField
@@ -129,23 +136,13 @@ export default function DetailProuessesScreen() {
       ) : null}
       {!pret || univers.length ? null : detail && !trouvees.length ? (
         <Text style={styles.vide}>Aucune prouesse ne correspond à « {recherche.trim()} ».</Text>
-      ) : detail?.niveau === 'land' || (detail?.niveau === 'type' && !estPersonnages) ? (
-        // Page d'un land : prouesses rangées par catégorie ; page d'une catégorie : par land ou hôtel
-        (detail.niveau === 'land' ? parCategorie(trouvees) : parLieu(trouvees)).map(({ titre, prouesses }) => (
-          <View key={titre} style={styles.section}>
-            <Text style={styles.titreSection} accessibilityRole="header">
-              {titre}
-            </Text>
-            <ListeProuesses prouesses={prouesses} />
-          </View>
-        ))
-      ) : detail ? (
-        <ListeProuesses prouesses={trouvees} />
-      ) : (
+      ) : !detail ? (
         <Text style={styles.vide}>Cette catégorie est introuvable.</Text>
-      )}
-    </ScrollView>
+      ) : null}
+    </View>
   );
+
+  return <ListeProuesses sections={sections} entete={enteteListe} contenu={contenuListe} />;
 }
 
 // Lignes affichées au plus par section du squelette : le reste est sous le pli
@@ -164,22 +161,6 @@ function squeletteDetail(detail: Categorie): SectionSquelette[] {
     nombre: Math.min(prouesses.length, LIGNES_SQUELETTE),
     titre: !!titre,
   }));
-}
-
-function ListeProuesses({ prouesses }: { prouesses: Prouesse[] }) {
-  return (
-    <View style={styles.liste}>
-      {prouesses.map((prouesse) => (
-        <IndiceRow
-          key={prouesse.id}
-          titre={prouesse.titre}
-          indice={prouesse.sousTitre}
-          obtenue={prouesse.obtenue}
-          onPress={() => router.push(`/prouesse/${prouesse.id}`)}
-        />
-      ))}
-    </View>
-  );
 }
 
 // Regroupe les prouesses par type, dans l'ordre des catégories ; celles sans type finissent en « Autres »
@@ -239,14 +220,20 @@ function EcranParc({ parc, entete, contenu }: EcranParcProps) {
     [parc, recherche],
   );
 
-  return (
-    <ScrollView
-      style={styles.screen}
-      contentContainerStyle={[contenu, styles.zoneSections]}
-      keyboardDismissMode="on-drag"
-      keyboardShouldPersistTaps="handled"
-      showsVerticalScrollIndicator={false}
-    >
+  const sansSousCategorie = !lands.length && !types.length;
+  const enRecherche = !!recherche.trim();
+  // Prouesses listées : celles trouvées en recherche, ou toutes celles d'un parc sans land ni type (ex. hôtels)
+  const sections: SectionProuesses[] = !pret
+    ? []
+    : trouvees.length
+      ? [{ titre: 'Prouesses', data: trouvees }]
+      : sansSousCategorie && !enRecherche
+        ? [{ titre: '', data: parc.prouesses }]
+        : [];
+  const aucunResultat = pret && sansSousCategorie && enRecherche && !trouvees.length;
+
+  const enteteListe = (
+    <View style={styles.zoneSections}>
       {entete}
       <SearchField
         value={recherche}
@@ -267,69 +254,63 @@ function EcranParc({ parc, entete, contenu }: EcranParcProps) {
           }
         />
       ) : null}
-
-      {pret ? <ResultatsProuesses prouesses={trouvees} /> : null}
-
-      {pret && lands.length ? (
-        <View style={styles.section}>
-          <Text style={styles.titreSection} accessibilityRole="header">
-            {estResort(parc.nom) ? 'Lieux' : 'Lands'}
-          </Text>
-          <GrilleCategories categories={lands} onPress={(land) => router.push(`/prouesses/${land.id}`)} />
-        </View>
-      ) : null}
-
-      {pret && types.length ? (
-        <View style={styles.section}>
-          <Text style={styles.titreSection} accessibilityRole="header">
-            Catégories
-          </Text>
-          <View style={styles.liste}>
-            {types.map((type) => (
-              <ProgressionRow
-                key={type.id}
-                titre={type.nom}
-                obtenues={type.obtenues}
-                total={type.total}
-                onPress={() => router.push({ pathname: '/prouesses/[id]', params: { id: type.id, parc: parc.id } })}
-              />
-            ))}
-          </View>
-        </View>
-      ) : null}
-
-      {pret && !lands.length && !types.length ? (
-        recherche.trim() ? (
-          trouvees.length ? null : <Text style={styles.vide}>Aucun résultat pour « {recherche.trim()} ».</Text>
-        ) : (
-          // Parc sans land ni type (ex. hôtels) : liste directe de ses prouesses
-          <View style={styles.liste}>
-            {parc.prouesses.map((prouesse) => (
-              <IndiceRow
-                key={prouesse.id}
-                titre={prouesse.titre}
-                indice={prouesse.sousTitre}
-                obtenue={prouesse.obtenue}
-                onPress={() => router.push(`/prouesse/${prouesse.id}`)}
-              />
-            ))}
-          </View>
-        )
-      ) : null}
-    </ScrollView>
+    </View>
   );
+
+  // Lands et catégories du parc, sous les prouesses trouvées en recherche
+  const pied =
+    pret && (lands.length || types.length || aucunResultat) ? (
+      <View style={[styles.zoneSections, styles.pied]}>
+        {lands.length ? (
+          <View style={styles.section}>
+            <Text style={styles.titreSection} accessibilityRole="header">
+              {estResort(parc.nom) ? 'Lieux' : 'Lands'}
+            </Text>
+            <GrilleCategories categories={lands} onPress={(land) => router.push(`/prouesses/${land.id}`)} />
+          </View>
+        ) : null}
+
+        {types.length ? (
+          <View style={styles.section}>
+            <Text style={styles.titreSection} accessibilityRole="header">
+              Catégories
+            </Text>
+            <View style={styles.liste}>
+              {types.map((type) => (
+                <ProgressionRow
+                  key={type.id}
+                  titre={type.nom}
+                  obtenues={type.obtenues}
+                  total={type.total}
+                  onPress={() => router.push({ pathname: '/prouesses/[id]', params: { id: type.id, parc: parc.id } })}
+                />
+              ))}
+            </View>
+          </View>
+        ) : null}
+
+        {aucunResultat ? <Text style={styles.vide}>Aucun résultat pour « {recherche.trim()} ».</Text> : null}
+      </View>
+    ) : null;
+
+  return <ListeProuesses sections={sections} entete={enteteListe} pied={pied} contenu={contenu} />;
 }
 
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
   },
-  zoneCentrale: {
-    paddingHorizontal: 16,
-    gap: 12,
-  },
   zoneSections: {
     gap: 24,
+  },
+  zoneListe: {
+    paddingHorizontal: 16,
+  },
+  zoneEntete: {
+    gap: 12,
+  },
+  pied: {
+    paddingTop: 24,
   },
   section: {
     gap: 16,
