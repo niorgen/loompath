@@ -98,9 +98,13 @@ const slug = (s: string) =>
 // Thèmes du CSV qui forment aussi une catégorie, en plus du type (ex. les plantes, de type Secret)
 const THEMES_CATEGORIES = ['Plantes'];
 
-// Univers des personnages (franchise en colonne « Thème 4 » du CSV), chacun avec son picto.
-// « Saisons » réunit les personnages du CSV de saison et ceux sans franchise
-const SAISONS = 'Saisons';
+// Prouesses de saison (CSV de saison, thème « Saisons ») : personnages, activités ou chasses au trésor,
+// elles forment leur propre catégorie et ne figurent dans aucune autre catégorie de type ni univers
+// (elles restent dans leur parc et leur land)
+export const SAISONS = 'Saisons';
+export const estSaisonniere = (p: ProuesseSource) => !!p.themes?.includes(SAISONS);
+
+// Univers des personnages (franchise en colonne « Thème 4 » du CSV), chacun avec son picto
 export const UNIVERS = [
   'Classiques Disney',
   'Mickey et ses amis',
@@ -109,22 +113,30 @@ export const UNIVERS = [
   'Marvel',
   'Pixar',
   'Star Wars',
-  SAISONS,
 ];
 
-// Univers d'un personnage ; aucun pour les autres types (les activités de saison n'en ont pas)
+// Univers d'un personnage ; aucun pour les autres types ni pour les personnages de saison
 export function universDe(p: ProuesseSource) {
-  if (p.type !== 'Personnages') return [];
-  const univers = (p.themes ?? []).filter((t) => UNIVERS.includes(t));
-  return univers.length ? univers : [SAISONS];
+  if (p.type !== 'Personnages' || estSaisonniere(p)) return [];
+  return (p.themes ?? []).filter((t) => UNIVERS.includes(t));
 }
 
-function categoriesDe(p: ProuesseSource) {
+// Catégories « par type » d'une prouesse : « Saisons » seule pour une prouesse de saison,
+// sinon son type et ses thèmes-catégories. saisonsParType : les prouesses de saison sont rangées
+// par leur vrai type (sous-catégories de la page Saisons)
+function typesDe(p: ProuesseSource, saisonsParType: boolean) {
+  if (estSaisonniere(p) && !saisonsParType) return [SAISONS];
+  return [
+    ...(p.type ? [TYPE_LABELS[p.type].pluriel] : []),
+    ...(p.themes ?? []).filter((t) => THEMES_CATEGORIES.includes(t)),
+  ];
+}
+
+function categoriesDe(p: ProuesseSource, saisonsParType: boolean) {
   return [
     { niveau: 'parc' as const, nom: p.parc },
     ...(p.land ? [{ niveau: 'land' as const, nom: p.land }] : []),
-    ...(p.type ? [{ niveau: 'type' as const, nom: TYPE_LABELS[p.type].pluriel }] : []),
-    ...(p.themes ?? []).filter((t) => THEMES_CATEGORIES.includes(t)).map((t) => ({ niveau: 'type' as const, nom: t })),
+    ...typesDe(p, saisonsParType).map((nom) => ({ niveau: 'type' as const, nom })),
     ...universDe(p).map((t) => ({ niveau: 'univers' as const, nom: t })),
   ].map((c) => ({ ...c, id: `${c.niveau}-${slug(c.nom)}` }));
 }
@@ -138,10 +150,13 @@ export type Categorie = {
   total: number;
 };
 
-export function construireCarnet(prouesses: Prouesse[]): Categorie[] {
+export function construireCarnet(
+  prouesses: Prouesse[],
+  { saisonsParType = false }: { saisonsParType?: boolean } = {},
+): Categorie[] {
   const parId = new Map<string, Categorie>();
   for (const prouesse of prouesses) {
-    for (const { id, niveau, nom } of categoriesDe(prouesse)) {
+    for (const { id, niveau, nom } of categoriesDe(prouesse, saisonsParType)) {
       let categorie = parId.get(id);
       if (!categorie) {
         categorie = { id, niveau, nom, prouesses: [], obtenues: 0, total: 0 };
