@@ -99,8 +99,8 @@ const slug = (s: string) =>
 const THEMES_CATEGORIES = ['Plantes'];
 
 // Prouesses de saison (CSV de saison, thème « Saisons ») : personnages, activités ou chasses au trésor,
-// elles forment leur propre catégorie et ne figurent dans aucune autre catégorie de type ni univers
-// (elles restent dans leur parc et leur land)
+// elles n'apparaissent que dans leur propre catégorie, ni dans un parc, un land, un autre type ou un univers.
+// La page Saisons les range ensuite par lieu et par vrai type (construireCarnet avec saisonsParType)
 export const SAISONS = 'Saisons';
 export const estSaisonniere = (p: ProuesseSource) => !!p.themes?.includes(SAISONS);
 
@@ -121,24 +121,23 @@ export function universDe(p: ProuesseSource) {
   return (p.themes ?? []).filter((t) => UNIVERS.includes(t));
 }
 
-// Catégories « par type » d'une prouesse : « Saisons » seule pour une prouesse de saison,
-// sinon son type et ses thèmes-catégories. saisonsParType : les prouesses de saison sont rangées
-// par leur vrai type (sous-catégories de la page Saisons)
-function typesDe(p: ProuesseSource, saisonsParType: boolean) {
-  if (estSaisonniere(p) && !saisonsParType) return [SAISONS];
-  return [
-    ...(p.type ? [TYPE_LABELS[p.type].pluriel] : []),
-    ...(p.themes ?? []).filter((t) => THEMES_CATEGORIES.includes(t)),
-  ];
-}
-
+// Catégories d'une prouesse : son parc, son land, son type et ses thèmes-catégories, son univers.
+// Une prouesse de saison n'est que dans la catégorie Saisons, sauf saisonsParType (pages ouvertes depuis
+// Saisons) où elle retrouve son parc, son land et son vrai type
 function categoriesDe(p: ProuesseSource, saisonsParType: boolean) {
-  return [
-    { niveau: 'parc' as const, nom: p.parc },
-    ...(p.land ? [{ niveau: 'land' as const, nom: p.land }] : []),
-    ...typesDe(p, saisonsParType).map((nom) => ({ niveau: 'type' as const, nom })),
-    ...universDe(p).map((t) => ({ niveau: 'univers' as const, nom: t })),
-  ].map((c) => ({ ...c, id: `${c.niveau}-${slug(c.nom)}` }));
+  const categories =
+    estSaisonniere(p) && !saisonsParType
+      ? [{ niveau: 'type' as const, nom: SAISONS }]
+      : [
+          { niveau: 'parc' as const, nom: p.parc },
+          ...(p.land ? [{ niveau: 'land' as const, nom: p.land }] : []),
+          ...(p.type ? [{ niveau: 'type' as const, nom: TYPE_LABELS[p.type].pluriel }] : []),
+          ...(p.themes ?? [])
+            .filter((t) => THEMES_CATEGORIES.includes(t))
+            .map((t) => ({ niveau: 'type' as const, nom: t })),
+          ...universDe(p).map((t) => ({ niveau: 'univers' as const, nom: t })),
+        ];
+  return categories.map((c) => ({ ...c, id: `${c.niveau}-${slug(c.nom)}` }));
 }
 
 export type Categorie = {

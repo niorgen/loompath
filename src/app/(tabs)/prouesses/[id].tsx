@@ -47,19 +47,25 @@ export default function DetailProuessesScreen() {
   const horsLand = sansLand === '1';
   const prouesses = useProuesses();
   const carnet = useCarnet();
-  const parc = parcId ? carnet.find((c) => c.id === parcId && c.niveau === 'parc') : undefined;
-  const land = landId ? carnet.find((c) => c.id === landId && c.niveau === 'land') : undefined;
-  const categories = useMemo(() => {
-    const base = dansSaisons ? prouesses.filter(estSaisonniere) : prouesses;
-    const options = { saisonsParType: dansSaisons };
-    return parc
-      ? construireCarnet(base.filter((p) => p.parc === parc.nom && (!horsLand || !p.land)), options)
-      : land
-        ? construireCarnet(base.filter((p) => p.land === land.nom), options)
-        : dansSaisons
-          ? construireCarnet(base, options)
-          : carnet;
-  }, [parc, land, prouesses, carnet, dansSaisons, horsLand]);
+  // Depuis Saisons : prouesses de saison seules, rangées par parc, land et vrai type (hors de Saisons,
+  // elles n'appartiennent à aucun parc ni land)
+  const options = useMemo(() => ({ saisonsParType: dansSaisons }), [dansSaisons]);
+  const base = useMemo(() => (dansSaisons ? prouesses.filter(estSaisonniere) : prouesses), [dansSaisons, prouesses]);
+  const carnetDeBase = useMemo(
+    () => (dansSaisons ? construireCarnet(base, options) : carnet),
+    [dansSaisons, base, options, carnet],
+  );
+  const parc = parcId ? carnetDeBase.find((c) => c.id === parcId && c.niveau === 'parc') : undefined;
+  const land = landId ? carnetDeBase.find((c) => c.id === landId && c.niveau === 'land') : undefined;
+  const categories = useMemo(
+    () =>
+      parc
+        ? construireCarnet(base.filter((p) => p.parc === parc.nom && (!horsLand || !p.land)), options)
+        : land
+          ? construireCarnet(base.filter((p) => p.land === land.nom), options)
+          : carnetDeBase,
+    [parc, land, base, options, carnetDeBase, horsLand],
+  );
   const detail = categories.find((c) => c.id === id);
   useTitrePage(detail?.nom ?? 'Prouesses');
   const [recherche, setRecherche] = useState('');
@@ -152,7 +158,7 @@ export default function DetailProuessesScreen() {
     !pret || grille.length || !detail || !trouvees.length
       ? []
       : detail.niveau === 'land'
-        ? parCategorie(trouvees, dansSaisons).map(({ titre, prouesses }) => ({ titre, data: prouesses }))
+        ? parCategorie(trouvees).map(({ titre, prouesses }) => ({ titre, data: prouesses }))
         : detail.niveau === 'type' && (!estPersonnages || dansSaisons)
           ? parLieu(trouvees).map(({ titre, prouesses }) => ({ titre, data: prouesses }))
           : [{ titre: '', data: trouvees }];
@@ -174,7 +180,7 @@ export default function DetailProuessesScreen() {
       {detail && !pret ? (
         <Squelette
           sections={
-            grille.length ? [{ forme: 'grille', nombre: grille.length }] : squeletteDetail(detail, dansSaisons)
+            grille.length ? [{ forme: 'grille', nombre: grille.length }] : squeletteDetail(detail)
           }
         />
       ) : null}
@@ -213,10 +219,10 @@ export default function DetailProuessesScreen() {
 const LIGNES_SQUELETTE = 6;
 
 // Squelette d'une page de land, de catégorie ou d'univers : mêmes sections que la page
-function squeletteDetail(detail: Categorie, dansSaisons: boolean): SectionSquelette[] {
+function squeletteDetail(detail: Categorie): SectionSquelette[] {
   const sections =
     detail.niveau === 'land'
-      ? parCategorie(detail.prouesses, dansSaisons)
+      ? parCategorie(detail.prouesses)
       : detail.niveau === 'type'
         ? parLieu(detail.prouesses)
         : [{ titre: '', prouesses: detail.prouesses }];
@@ -227,17 +233,14 @@ function squeletteDetail(detail: Categorie, dansSaisons: boolean): SectionSquele
   }));
 }
 
-// Regroupe les prouesses par type, dans l'ordre des catégories ; celles de saison forment leur propre
-// groupe, quel que soit leur type (sauf saisonsParType, depuis la page Saisons) ; celles sans type
-// finissent en « Autres »
-function parCategorie(prouesses: Prouesse[], saisonsParType = false) {
-  const horsSaison = saisonsParType ? prouesses : prouesses.filter((p) => !estSaisonniere(p));
+// Regroupe les prouesses par type, dans l'ordre des catégories ; celles sans type finissent en « Autres ».
+// Un land ne contient de prouesses de saison que depuis la page Saisons : elles y sont rangées par vrai type
+function parCategorie(prouesses: Prouesse[]) {
   const groupes = (Object.keys(TYPE_LABELS) as TypeProuesse[]).map((type) => ({
     titre: TYPE_LABELS[type].pluriel,
-    prouesses: horsSaison.filter((p) => p.type === type),
+    prouesses: prouesses.filter((p) => p.type === type),
   }));
-  if (!saisonsParType) groupes.push({ titre: SAISONS, prouesses: prouesses.filter(estSaisonniere) });
-  groupes.push({ titre: 'Autres', prouesses: horsSaison.filter((p) => !p.type) });
+  groupes.push({ titre: 'Autres', prouesses: prouesses.filter((p) => !p.type) });
   return groupes.filter((g) => g.prouesses.length);
 }
 

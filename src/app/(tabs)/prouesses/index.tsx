@@ -9,7 +9,7 @@ import { ListeProuesses, type SectionProuesses } from '@/components/ListeProuess
 import { NAV_HEIGHT } from '@/components/NavigationMenu';
 import { SearchField } from '@/components/SearchField';
 import { Squelette } from '@/components/Squelette';
-import { estResort, rechercherCarnet, rechercherProuesses } from '@/data';
+import { estResort, estSaisonniere, rechercherCarnet, rechercherProuesses } from '@/data';
 import { useAffichageDiffere } from '@/hooks/useAffichageDiffere';
 import { useTitrePage } from '@/hooks/useTitrePage';
 import { useCarnet, useProuesses } from '@/state/validations';
@@ -25,9 +25,10 @@ export default function CarnetScreen() {
   const prouesses = useProuesses();
   const resultats = useMemo(() => rechercherCarnet(carnet, recherche), [carnet, recherche]);
   const enRecherche = !!recherche.trim();
-  // En recherche, les prouesses trouvées dans toutes les catégories sont listées directement
+  // En recherche, les prouesses trouvées dans toutes les catégories sont listées directement ; celles de
+  // saison ne se trouvent que via la catégorie Saisons, qui ressort quand l'une d'elles correspond
   const trouvees = useMemo(
-    () => (enRecherche ? rechercherProuesses(prouesses, recherche) : []),
+    () => (enRecherche ? rechercherProuesses(prouesses.filter((p) => !estSaisonniere(p)), recherche) : []),
     [enRecherche, prouesses, recherche],
   );
 

@@ -13,7 +13,7 @@ import { ProgressionRow } from '@/components/ProgressionRow';
 import { ProuesseRow } from '@/components/ProuesseRow';
 import { SectionHeader } from '@/components/SectionHeader';
 import { StatCards } from '@/components/StatCards';
-import { calculerStats, construireCarnet } from '@/data';
+import { calculerStats, construireCarnet, estSaisonniere } from '@/data';
 import { useLandDuJoueur, usePositionJoueur } from '@/hooks/usePositionJoueur';
 import { formatDistance, useProuessesProches } from '@/hooks/useProuessesProches';
 import { useTitrePage } from '@/hooks/useTitrePage';
@@ -48,7 +48,8 @@ export default function JournalScreen() {
   );
 
   // Sans position : quelques prouesses encore à valider, dans l'ordre du carnet
-  const aFaire = useMemo(() => prouesses.filter((p) => !p.obtenue).slice(0, 5), [prouesses]);
+  // (hors prouesses de saison, réservées à la catégorie Saisons)
+  const aFaire = useMemo(() => prouesses.filter((p) => !p.obtenue && !estSaisonniere(p)).slice(0, 5), [prouesses]);
 
   // Types de prouesses du land où se trouve le joueur, avec leur progression
   const categorieLand = land ? carnet.find((c) => c.niveau === 'land' && c.nom === land) : undefined;

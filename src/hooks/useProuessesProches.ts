@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { estLocalisee, type ProuesseLocalisee } from '@/data';
+import { estLocalisee, estSaisonniere, type ProuesseLocalisee } from '@/data';
 import { distanceKm, type Coords } from '@/hooks/usePositionJoueur';
 import { useProuesses } from '@/state/validations';
 
@@ -14,14 +14,14 @@ export function formatDistance(km: number) {
 }
 
 // Prouesses géolocalisées les plus proches du joueur, encore à valider
-// (celles sans coordonnées ou déjà obtenues sont ignorées)
+// (celles sans coordonnées, déjà obtenues, ou de saison, réservées à la catégorie Saisons, sont ignorées)
 export function useProuessesProches(position: Coords | undefined, limit = 5) {
   const prouesses = useProuesses();
 
   return useMemo(() => {
     const origine = position ?? FALLBACK;
     return prouesses
-      .filter((prouesse) => !prouesse.obtenue)
+      .filter((prouesse) => !prouesse.obtenue && !estSaisonniere(prouesse))
       .filter(estLocalisee)
       .map((prouesse): ProuesseLocalisee & { distanceKm: number } => ({
         ...prouesse,
